@@ -233,6 +233,13 @@ color:white;
 border-radius:12px;
 }
 
+.export-btn{
+padding:12px 18px;
+background:#2196f3;
+color:white;
+border-radius:12px;
+}
+
 .admin-wrap{
 padding:20px;
 }
@@ -333,14 +340,21 @@ Logout
 
 <div class="menu-grid">
 
-<div class="menu-card">MS WORDS</div>
-<div class="menu-card">MS EXCEL</div>
-<div class="menu-card">POWER POINT</div>
-<div class="menu-card">INTERNET</div>
-<div class="menu-card">MIX BASIC</div>
-<div class="menu-card">MIX ADVANCE</div>
-<div class="menu-card">WORD + EXCEL</div>
-<div class="menu-card">PPT + INTERNET</div>
+<div class="menu-card" data-link="word.html">MS WORDS</div>
+
+<div class="menu-card" data-link="excel.html">MS EXCEL</div>
+
+<div class="menu-card" data-link="ppt.html">POWER POINT</div>
+
+<div class="menu-card" data-link="internet.html">INTERNET</div>
+
+<div class="menu-card" data-link="mix-basic.html">MIX BASIC</div>
+
+<div class="menu-card" data-link="mix-advance.html">MIX ADVANCE</div>
+
+<div class="menu-card" data-link="word-excel.html">WORD + EXCEL</div>
+
+<div class="menu-card" data-link="ppt-internet.html">PPT + INTERNET</div>
 
 </div>
 
@@ -352,9 +366,17 @@ Logout
 
 <h2>ADMIN PANEL</h2>
 
+<div style="display:flex;gap:10px;flex-wrap:wrap;">
+
+<button class="export-btn" id="exportBtn">
+EXPORT DATA
+</button>
+
 <button class="back-btn" id="backBtn">
 Kembali
 </button>
+
+</div>
 
 </div>
 
@@ -395,7 +417,7 @@ Kembali
 <script>
 
 //////////////////////////////////////////////////
-// DAFTAR PASSWORD ADMIN
+// PASSWORD LIST
 //////////////////////////////////////////////////
 
 const passwordList = [
@@ -451,57 +473,48 @@ const passwordList = [
 "prcZZ6L"
 ];
 
-//////////////////////////////////////////////////
-// PASSWORD ADMIN
-//////////////////////////////////////////////////
-
 const ADMIN_PASSWORD = "adminPRC2026";
 
-//////////////////////////////////////////////////
-// OBFUSCATE
-//////////////////////////////////////////////////
-
-const encodedPasswords = passwordList.map(x => btoa(x));
-
-//////////////////////////////////////////////////
-// STORAGE
-//////////////////////////////////////////////////
+const encodedPasswords =
+passwordList.map(x => btoa(x));
 
 let accountData =
 JSON.parse(localStorage.getItem("accountData")) || {};
 
-//////////////////////////////////////////////////
-// ELEMENT
-//////////////////////////////////////////////////
+const loginBtn =
+document.getElementById("loginBtn");
 
-const loginBtn = document.getElementById("loginBtn");
-const passwordInput = document.getElementById("passwordInput");
+const passwordInput =
+document.getElementById("passwordInput");
 
-const loginPage = document.getElementById("loginPage");
-const dashboard = document.getElementById("dashboard");
-const adminPage = document.getElementById("adminPage");
+const loginPage =
+document.getElementById("loginPage");
 
-const popup = document.getElementById("popup");
-const welcomeText = document.getElementById("welcomeText");
-const countdown = document.getElementById("countdown");
+const dashboard =
+document.getElementById("dashboard");
 
-//////////////////////////////////////////////////
-// LOADING
-//////////////////////////////////////////////////
+const adminPage =
+document.getElementById("adminPage");
+
+const popup =
+document.getElementById("popup");
+
+const welcomeText =
+document.getElementById("welcomeText");
+
+const countdown =
+document.getElementById("countdown");
 
 window.onload = () => {
 
 setTimeout(() => {
 
-document.getElementById("loadingScreen").style.display = "none";
+document.getElementById("loadingScreen")
+.style.display = "none";
 
 },1500);
 
 };
-
-//////////////////////////////////////////////////
-// DEVICE ID
-//////////////////////////////////////////////////
 
 function getDeviceId(){
 
@@ -513,10 +526,6 @@ navigator.language
 );
 
 }
-
-//////////////////////////////////////////////////
-// POPUP
-//////////////////////////////////////////////////
 
 function showPopup(text){
 
@@ -532,19 +541,11 @@ popup.classList.add("hidden");
 
 }
 
-//////////////////////////////////////////////////
-// LOGIN LIMIT
-//////////////////////////////////////////////////
-
 let loginAttempts =
 parseInt(localStorage.getItem("loginAttempts")) || 0;
 
 let blockedUntil =
 parseInt(localStorage.getItem("blockedUntil")) || 0;
-
-//////////////////////////////////////////////////
-// LOGIN
-//////////////////////////////////////////////////
 
 loginBtn.addEventListener("click", loginSystem);
 
@@ -560,10 +561,6 @@ function loginSystem(){
 
 const input = passwordInput.value.trim();
 
-//////////////////////////////////////////////////
-// BLOCK CHECK
-//////////////////////////////////////////////////
-
 if(Date.now() < blockedUntil){
 
 showPopup("Terlalu banyak percobaan login.");
@@ -572,10 +569,6 @@ return;
 
 }
 
-//////////////////////////////////////////////////
-// ADMIN
-//////////////////////////////////////////////////
-
 if(input === ADMIN_PASSWORD){
 
 openAdmin();
@@ -583,10 +576,6 @@ openAdmin();
 return;
 
 }
-
-//////////////////////////////////////////////////
-// VALID PASSWORD
-//////////////////////////////////////////////////
 
 const valid =
 encodedPasswords.includes(btoa(input));
@@ -614,17 +603,9 @@ return;
 
 }
 
-//////////////////////////////////////////////////
-// RESET ATTEMPT
-//////////////////////////////////////////////////
-
 loginAttempts = 0;
 
 localStorage.setItem("loginAttempts",0);
-
-//////////////////////////////////////////////////
-// DEVICE
-//////////////////////////////////////////////////
 
 const deviceId = getDeviceId();
 
@@ -641,10 +622,6 @@ saveData();
 
 }
 
-//////////////////////////////////////////////////
-// DEVICE CHECK
-//////////////////////////////////////////////////
-
 if(accountData[input].deviceId !== deviceId){
 
 showPopup("Password sudah digunakan di perangkat lain.");
@@ -652,10 +629,6 @@ showPopup("Password sudah digunakan di perangkat lain.");
 return;
 
 }
-
-//////////////////////////////////////////////////
-// EXPIRED CHECK
-//////////////////////////////////////////////////
 
 const expired =
 accountData[input].firstLogin +
@@ -669,10 +642,6 @@ return;
 
 }
 
-//////////////////////////////////////////////////
-// LOGIN SUCCESS
-//////////////////////////////////////////////////
-
 localStorage.setItem("loggedInUser",input);
 
 showPopup("Login berhasil.");
@@ -680,10 +649,6 @@ showPopup("Login berhasil.");
 openDashboard(input);
 
 }
-
-//////////////////////////////////////////////////
-// SAVE
-//////////////////////////////////////////////////
 
 function saveData(){
 
@@ -693,10 +658,6 @@ JSON.stringify(accountData)
 );
 
 }
-
-//////////////////////////////////////////////////
-// DASHBOARD
-//////////////////////////////////////////////////
 
 function openDashboard(user){
 
@@ -712,10 +673,6 @@ welcomeText.innerHTML =
 startCountdown(user);
 
 }
-
-//////////////////////////////////////////////////
-// COUNTDOWN
-//////////////////////////////////////////////////
 
 function startCountdown(user){
 
@@ -753,10 +710,6 @@ countdown.innerText =
 
 }
 
-//////////////////////////////////////////////////
-// AUTO LOGIN
-//////////////////////////////////////////////////
-
 const loggedUser =
 localStorage.getItem("loggedInUser");
 
@@ -778,10 +731,6 @@ openDashboard(loggedUser);
 
 }
 
-//////////////////////////////////////////////////
-// LOGOUT
-//////////////////////////////////////////////////
-
 document.getElementById("logoutBtn")
 .addEventListener("click",()=>{
 
@@ -790,10 +739,6 @@ localStorage.removeItem("loggedInUser");
 location.reload();
 
 });
-
-//////////////////////////////////////////////////
-// ADMIN PANEL
-//////////////////////////////////////////////////
 
 function openAdmin(){
 
@@ -862,9 +807,77 @@ tbody.innerHTML += `
 
 }
 
-//////////////////////////////////////////////////
-// BACK BUTTON
-//////////////////////////////////////////////////
+document.getElementById("exportBtn")
+.addEventListener("click",()=>{
+
+let text = "REKAP PASSWORD TRYOUT\n\n";
+
+passwordList.forEach(pass=>{
+
+const data = accountData[pass];
+
+let status = "Belum digunakan";
+let first = "-";
+let remain = "-";
+let device = "Belum";
+
+if(data){
+
+status = "Aktif";
+
+first =
+new Date(data.firstLogin)
+.toLocaleString("id-ID");
+
+device = "Sudah";
+
+const end =
+data.firstLogin +
+(20*24*60*60*1000);
+
+const diff = end - Date.now();
+
+if(diff <= 0){
+
+remain = "Expired";
+
+}else{
+
+const days =
+Math.floor(diff/(1000*60*60*24));
+
+remain = days + " Hari";
+
+}
+
+}
+
+text +=
+`Password : ${pass}
+Status : ${status}
+Login Pertama : ${first}
+Sisa Aktif : ${remain}
+Device : ${device}
+
+`;
+
+});
+
+const blob =
+new Blob([text],{type:"text/plain"});
+
+const a =
+document.createElement("a");
+
+a.href = URL.createObjectURL(blob);
+
+a.download = "rekap-password.txt";
+
+a.click();
+
+showPopup("Data berhasil diexport.");
+
+});
 
 document.getElementById("backBtn")
 .addEventListener("click",()=>{
@@ -872,10 +885,6 @@ document.getElementById("backBtn")
 location.reload();
 
 });
-
-//////////////////////////////////////////////////
-// PROTECTION
-//////////////////////////////////////////////////
 
 document.addEventListener("contextmenu",e=>{
 e.preventDefault();
@@ -898,7 +907,7 @@ e.preventDefault();
 });
 
 //////////////////////////////////////////////////
-// MENU CLICK
+// MENU REDIRECT
 //////////////////////////////////////////////////
 
 document.querySelectorAll(".menu-card")
@@ -906,7 +915,10 @@ document.querySelectorAll(".menu-card")
 
 card.addEventListener("click",()=>{
 
-showPopup(card.innerText + " dibuka");
+const target =
+card.getAttribute("data-link");
+
+window.location.href = target;
 
 });
 
