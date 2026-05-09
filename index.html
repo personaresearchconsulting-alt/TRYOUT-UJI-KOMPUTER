@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>PRC Premium Tryout</title>
+<title>TRYOUT SIMULASI CAT UJI KOMPUTER</title>
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -21,130 +21,97 @@ font-family:'Poppins',sans-serif;
 }
 
 body{
-min-height:100vh;
 background:
-radial-gradient(circle at top left,rgba(0,136,255,.25),transparent 25%),
-radial-gradient(circle at bottom right,rgba(0,98,255,.25),transparent 25%),
-#07111f;
-color:white;
+linear-gradient(135deg,#07152d,#0b2447,#19376d);
+min-height:100vh;
 overflow-x:hidden;
+color:white;
 }
 
 .hidden{
 display:none !important;
 }
 
-#loading-screen{
+#loadingScreen{
 position:fixed;
 inset:0;
-z-index:9999;
-background:#07111f;
+background:#07152d;
 display:flex;
+flex-direction:column;
 justify-content:center;
 align-items:center;
+z-index:99999;
 }
 
-.loader-box{
-text-align:center;
-}
-
-.loader-circle{
-width:90px;
-height:90px;
-border:6px solid rgba(255,255,255,.1);
-border-top:6px solid #3ea6ff;
+.loader{
+width:70px;
+height:70px;
 border-radius:50%;
+border:6px solid rgba(255,255,255,.2);
+border-top:6px solid white;
 animation:spin 1s linear infinite;
-margin:auto;
 margin-bottom:20px;
 }
 
 @keyframes spin{
-to{
+100%{
 transform:rotate(360deg);
 }
 }
 
-.auth-container,
-#adminSection{
-width:100%;
+.center-page{
 min-height:100vh;
 display:flex;
 justify-content:center;
 align-items:center;
-padding:30px;
+padding:20px;
 }
 
-#dashboardSection{
-padding:30px;
-}
-
-.glass-card{
+.glass{
 background:rgba(255,255,255,.08);
-backdrop-filter:blur(18px);
-border:1px solid rgba(255,255,255,.12);
-box-shadow:0 10px 40px rgba(0,0,0,.35);
+backdrop-filter:blur(15px);
+border:1px solid rgba(255,255,255,.15);
+box-shadow:0 8px 32px rgba(0,0,0,.3);
 }
 
 .login-card{
 width:100%;
-max-width:430px;
-border-radius:28px;
+max-width:450px;
 padding:40px;
-}
-
-.logo-area{
+border-radius:25px;
 text-align:center;
-margin-bottom:35px;
+animation:fade .8s ease;
 }
 
-.logo-circle{
-width:90px;
-height:90px;
-background:linear-gradient(135deg,#0f5fff,#41b7ff);
-margin:auto;
-border-radius:50%;
-display:flex;
-justify-content:center;
-align-items:center;
+@keyframes fade{
+from{
+opacity:0;
+transform:translateY(30px);
+}
+to{
+opacity:1;
+transform:translateY(0);
+}
+}
+
+.login-card h1{
 font-size:28px;
-font-weight:700;
-margin-bottom:18px;
+margin-bottom:12px;
 }
 
-.logo-area h1{
-font-size:30px;
-margin-bottom:6px;
+.subtitle{
+opacity:.8;
+margin-bottom:30px;
 }
 
-.logo-area p{
-opacity:.7;
-font-size:14px;
-}
-
-.form-group{
-margin-bottom:20px;
-}
-
-.form-group label{
-display:block;
-margin-bottom:8px;
-}
-
-.form-group input{
+input{
 width:100%;
 padding:15px;
-border-radius:14px;
-border:1px solid rgba(255,255,255,.15);
-background:rgba(255,255,255,.06);
-color:white;
+border:none;
 outline:none;
-transition:.3s;
-}
-
-.form-group input:focus{
-border-color:#3ea6ff;
-box-shadow:0 0 15px rgba(62,166,255,.4);
+border-radius:14px;
+margin-bottom:20px;
+font-size:15px;
 }
 
 button{
@@ -153,109 +120,135 @@ cursor:pointer;
 transition:.3s;
 }
 
-.primary-btn,
-.secondary-btn,
-.danger-btn{
+.login-btn{
 width:100%;
-padding:14px;
-border-radius:14px;
+padding:15px;
+background:#2196f3;
 color:white;
-font-size:15px;
+border-radius:14px;
+font-size:16px;
 font-weight:600;
 }
 
-.primary-btn{
-background:linear-gradient(135deg,#0f5fff,#38b6ff);
+.login-btn:hover{
+transform:translateY(-4px);
+background:#42a5f5;
 }
 
-.secondary-btn{
-background:rgba(255,255,255,.08);
-margin-top:10px;
-}
-
-.danger-btn{
-background:#d93025;
-}
-
-button:hover{
-transform:translateY(-3px);
-}
-
-.divider{
-height:1px;
-background:rgba(255,255,255,.1);
-margin:22px 0;
+#dashboard{
+padding:30px;
 }
 
 .topbar{
-width:100%;
-padding:25px;
-border-radius:22px;
-margin-bottom:25px;
 display:flex;
 justify-content:space-between;
-gap:20px;
 align-items:center;
+gap:20px;
+flex-wrap:wrap;
+margin-bottom:30px;
+}
+
+.top-right{
+display:flex;
+align-items:center;
+gap:15px;
 flex-wrap:wrap;
 }
 
-.top-actions{
-display:flex;
-gap:12px;
-align-items:center;
+.count-box{
+padding:15px 20px;
+border-radius:15px;
+background:rgba(255,255,255,.08);
+font-weight:600;
 }
 
-.countdown-box{
-padding:12px 18px;
+.logout-btn{
+padding:14px 20px;
+background:#f44336;
+color:white;
 border-radius:12px;
-background:rgba(255,255,255,.08);
+}
+
+.logout-btn:hover{
+transform:translateY(-3px);
 }
 
 .menu-grid{
 display:grid;
 grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
-gap:22px;
+gap:20px;
 }
 
 .menu-card{
-background:rgba(255,255,255,.08);
-border:1px solid rgba(255,255,255,.12);
-border-radius:24px;
 padding:35px 20px;
+border-radius:22px;
 text-align:center;
-transition:.35s;
+font-weight:600;
+font-size:17px;
 cursor:pointer;
-backdrop-filter:blur(15px);
-}
-
-.menu-card span{
-font-size:50px;
-display:block;
-margin-bottom:18px;
+transition:.3s;
+background:rgba(255,255,255,.08);
+backdrop-filter:blur(14px);
+border:1px solid rgba(255,255,255,.1);
 }
 
 .menu-card:hover{
-transform:translateY(-8px) scale(1.02);
-box-shadow:0 15px 40px rgba(0,0,0,.35);
-border-color:#38b6ff;
+transform:translateY(-7px) scale(1.02);
+background:rgba(255,255,255,.14);
 }
 
-.admin-card{
-width:100%;
-max-width:1200px;
-border-radius:24px;
-padding:30px;
+.popup{
+position:fixed;
+top:30px;
+right:30px;
+background:#0f172a;
+padding:18px 24px;
+border-left:5px solid #2196f3;
+border-radius:14px;
+z-index:9999;
+animation:slide .4s ease;
+}
+
+@keyframes slide{
+from{
+opacity:0;
+transform:translateX(100px);
+}
+to{
+opacity:1;
+transform:translateX(0);
+}
 }
 
 .admin-header{
 display:flex;
 justify-content:space-between;
 align-items:center;
-margin-bottom:30px;
+padding:20px;
 }
 
-.table-wrapper{
-overflow-x:auto;
+.back-btn{
+padding:12px 18px;
+background:#f44336;
+color:white;
+border-radius:12px;
+}
+
+.export-btn{
+padding:12px 18px;
+background:#2196f3;
+color:white;
+border-radius:12px;
+}
+
+.admin-wrap{
+padding:20px;
+}
+
+.admin-card{
+padding:20px;
+border-radius:20px;
+overflow:auto;
 }
 
 table{
@@ -263,44 +256,27 @@ width:100%;
 border-collapse:collapse;
 }
 
-th,
-td{
+th,td{
 padding:14px;
+border-bottom:1px solid rgba(255,255,255,.15);
+font-size:14px;
 text-align:left;
-border-bottom:1px solid rgba(255,255,255,.1);
-}
-
-th{
-background:rgba(255,255,255,.05);
-}
-
-#toast{
-position:fixed;
-top:25px;
-right:25px;
-background:rgba(0,0,0,.8);
-color:white;
-padding:16px 22px;
-border-radius:14px;
-z-index:99999;
-transform:translateX(500px);
-transition:.4s;
-}
-
-#toast.show{
-transform:translateX(0);
 }
 
 footer{
 text-align:center;
-padding:25px;
+padding:30px;
 opacity:.7;
 }
 
 @media(max-width:768px){
 
 .login-card{
-padding:28px;
+padding:30px 20px;
+}
+
+.login-card h1{
+font-size:22px;
 }
 
 .topbar{
@@ -308,180 +284,76 @@ flex-direction:column;
 align-items:flex-start;
 }
 
-.top-actions{
-width:100%;
-flex-direction:column;
-}
-
-.top-actions button{
-width:100%;
-}
-
 }
 
 </style>
 </head>
-
 <body>
 
-<div id="loading-screen">
-<div class="loader-box">
-<div class="loader-circle"></div>
-<h2>PRC PREMIUM</h2>
-<p>Loading secure platform...</p>
-</div>
+<div id="loadingScreen">
+<div class="loader"></div>
+<h2>Loading Tryout System...</h2>
 </div>
 
-<div id="toast"></div>
+<section id="loginPage" class="center-page">
 
-<section class="auth-container" id="loginSection">
+<div class="glass login-card">
 
-<div class="glass-card login-card">
+<h1>TRYOUT SIMULASI CAT UJI KOMPUTER</h1>
 
-<div class="logo-area">
-<div class="logo-circle">PRC</div>
-<h1>PREMIUM TRYOUT</h1>
-<p>PERSONA RESEARCH & CONSULTING</p>
-</div>
+<p class="subtitle">
+PERSONA RESEARCH & CONSULTING
+</p>
 
-<div class="form-group">
-<label>Password Akses</label>
-<input type="password" id="passwordInput" placeholder="Masukkan password premium">
-</div>
+<input type="password" id="passwordInput" placeholder="Masukkan Password">
 
-<button id="loginBtn" class="primary-btn">
-Login Premium
-</button>
-
-<div class="divider"></div>
-
-<button id="adminBtn" class="secondary-btn">
-Admin Panel
+<button class="login-btn" id="loginBtn">
+LOGIN
 </button>
 
 </div>
+
 </section>
 
-<section id="dashboardSection" class="hidden">
+<section id="dashboard" class="hidden">
 
-<div class="topbar glass-card">
+<div class="topbar">
 
 <div>
-<h2>Welcome Back</h2>
-<p id="accountInfo"></p>
+<h2>TRYOUT MENU</h2>
+<p id="welcomeText"></p>
 </div>
 
-<div class="top-actions">
-<div class="countdown-box" id="countdownBox"></div>
+<div class="top-right">
 
-<button id="logoutBtn" class="danger-btn">
+<div class="count-box" id="countdown">
+Loading...
+</div>
+
+<button class="logout-btn" id="logoutBtn">
 Logout
 </button>
+
 </div>
 
 </div>
 
 <div class="menu-grid">
 
-<div class="menu-card" data-link="word.html">
-<span>📘</span>
-<h3>MS WORDS</h3>
-</div>
-
-<div class="menu-card" data-link="excel.html">
-<span>📗</span>
-<h3>MS EXCEL</h3>
-</div>
-
-<div class="menu-card" data-link="ppt.html">
-<span>📙</span>
-<h3>POWER POINT</h3>
-</div>
-
-<div class="menu-card" data-link="internet.html">
-<span>🌐</span>
-<h3>INTERNET</h3>
-</div>
-
-<div class="menu-card" data-link="mix-basic.html">
-<span>🧩</span>
-<h3>MIX BASIC</h3>
-</div>
-
-<div class="menu-card" data-link="mix-advance.html">
-<span>🚀</span>
-<h3>MIX ADVANCE</h3>
-</div>
-
-<div class="menu-card" data-link="word-excel.html">
-<span>📊</span>
-<h3>WORD + EXCEL</h3>
-</div>
-
-<div class="menu-card" data-link="ppt-internet.html">
-<span>💡</span>
-<h3>PPT + INTERNET</h3>
-</div>
+<div class="menu-card" data-link="word.html">MS WORDS</div>
+<div class="menu-card" data-link="excel.html">MS EXCEL</div>
+<div class="menu-card" data-link="ppt.html">POWER POINT</div>
+<div class="menu-card" data-link="internet.html">INTERNET</div>
+<div class="menu-card" data-link="mix-basic.html">MIX BASIC</div>
+<div class="menu-card" data-link="mix-advance.html">MIX ADVANCE</div>
+<div class="menu-card" data-link="word-excel.html">WORD + EXCEL</div>
+<div class="menu-card" data-link="ppt-internet.html">PPT + INTERNET</div>
 
 </div>
+
 </section>
 
-<section id="adminSection" class="hidden">
-
-<div class="glass-card admin-card">
-
-<div class="admin-header">
-
-<div>
-<h2>ADMIN PANEL</h2>
-<p>Monitoring akun premium</p>
-</div>
-
-<button id="closeAdminBtn" class="danger-btn">
-Close
-</button>
-
-</div>
-
-<div id="adminLoginBox">
-
-<div class="form-group">
-<label>Password Admin</label>
-<input type="password" id="adminPassword" placeholder="Masukkan password admin">
-</div>
-
-<button id="adminLoginSubmit" class="primary-btn">
-Masuk Admin
-</button>
-
-</div>
-
-<div id="adminContent" class="hidden">
-
-<div class="table-wrapper">
-
-<table>
-
-<thead>
-<tr>
-<th>Password</th>
-<th>Status</th>
-<th>Login Pertama</th>
-<th>Sisa Aktif</th>
-<th>Device</th>
-</tr>
-</thead>
-
-<tbody id="adminTableBody"></tbody>
-
-</table>
-
-</div>
-
-</div>
-
-</div>
-</section>
+<div id="popup" class="popup hidden"></div>
 
 <footer>
 © PERSONA RESEARCH & CONSULTING
@@ -490,7 +362,7 @@ Masuk Admin
 <script>
 
 //////////////////////////////////////////////////
-// DAFTAR PASSWORD ADMIN
+// PASSWORD LIST
 //////////////////////////////////////////////////
 
 const passwordList = [
@@ -546,109 +418,82 @@ const passwordList = [
 "prcZZ6L"
 ];
 
-const ADMIN_PASSWORD = "PRC_ADMIN_2026";
+let accountData =
+JSON.parse(localStorage.getItem("accountData")) || {};
 
-const STORAGE_KEY = "prc_premium_accounts";
-const SESSION_KEY = "prc_logged_account";
-const LOGIN_ATTEMPT_KEY = "prc_login_attempt";
+const loginBtn =
+document.getElementById("loginBtn");
 
-const BLOCK_TIME = 10 * 60 * 1000;
-const MAX_ATTEMPTS = 5;
-const ACTIVE_DAYS = 30;
+const passwordInput =
+document.getElementById("passwordInput");
 
-const encodedPasswords = passwordList.map(item => btoa(item));
+const loginPage =
+document.getElementById("loginPage");
 
-const loginBtn = document.getElementById("loginBtn");
-const passwordInput = document.getElementById("passwordInput");
-const toast = document.getElementById("toast");
+const dashboard =
+document.getElementById("dashboard");
 
-const dashboardSection = document.getElementById("dashboardSection");
-const loginSection = document.getElementById("loginSection");
+const popup =
+document.getElementById("popup");
 
-const accountInfo = document.getElementById("accountInfo");
-const countdownBox = document.getElementById("countdownBox");
+const welcomeText =
+document.getElementById("welcomeText");
 
-const logoutBtn = document.getElementById("logoutBtn");
+const countdown =
+document.getElementById("countdown");
 
-const adminBtn = document.getElementById("adminBtn");
-const adminSection = document.getElementById("adminSection");
-const closeAdminBtn = document.getElementById("closeAdminBtn");
-
-const adminLoginSubmit = document.getElementById("adminLoginSubmit");
-const adminPassword = document.getElementById("adminPassword");
-
-const adminLoginBox = document.getElementById("adminLoginBox");
-const adminContent = document.getElementById("adminContent");
-const adminTableBody = document.getElementById("adminTableBody");
-
-window.addEventListener("load", () => {
+window.onload = () => {
 
 setTimeout(() => {
-document.getElementById("loading-screen").style.display = "none";
-}, 1800);
 
-});
+document.getElementById("loadingScreen")
+.style.display = "none";
 
-function initializeAccounts(){
+},1500);
 
-let existing = JSON.parse(localStorage.getItem(STORAGE_KEY));
-
-if(!existing){
-
-const accounts = {};
-
-encodedPasswords.forEach(item => {
-
-accounts[item] = {
-deviceId:null,
-firstLogin:null,
-expiredAt:null,
-active:false
 };
 
-});
+//////////////////////////////////////////////////
+// DEVICE LOCK FINGERPRINT
+//////////////////////////////////////////////////
 
-localStorage.setItem(STORAGE_KEY, JSON.stringify(accounts));
+function getDeviceId(){
 
-}
+const rawData = [
 
-}
-
-initializeAccounts();
-
-function showToast(message){
-
-toast.innerText = message;
-
-toast.classList.add("show");
-
-setTimeout(() => {
-toast.classList.remove("show");
-}, 3000);
-
-}
-
-function generateFingerprint(){
-
-const raw = [
 navigator.userAgent,
-screen.width + "x" + screen.height,
-Intl.DateTimeFormat().resolvedOptions().timeZone,
 navigator.platform,
-navigator.language
+navigator.language,
+
+screen.width,
+screen.height,
+
+window.devicePixelRatio,
+
+Intl.DateTimeFormat()
+.resolvedOptions()
+.timeZone,
+
+navigator.hardwareConcurrency || "cpu",
+
+navigator.maxTouchPoints || "touch"
+
 ].join("###");
 
-return simpleHash(raw);
+return generateHash(rawData);
 
 }
 
-function simpleHash(str){
+function generateHash(str){
 
 let hash = 0;
 
-for(let i=0;i<str.length;i++){
+for(let i = 0; i < str.length; i++){
 
-hash = ((hash << 5) - hash) + str.charCodeAt(i);
+hash =
+((hash << 5) - hash)
++ str.charCodeAt(i);
+
 hash |= 0;
 
 }
@@ -657,320 +502,198 @@ return "PRC-" + Math.abs(hash);
 
 }
 
-function getAttemptData(){
+function showPopup(text){
 
-return JSON.parse(localStorage.getItem(LOGIN_ATTEMPT_KEY)) || {
-attempts:0,
-blockedUntil:null
+popup.innerText = text;
+
+popup.classList.remove("hidden");
+
+setTimeout(() => {
+
+popup.classList.add("hidden");
+
+},3000);
+
+}
+
+loginBtn.addEventListener("click", loginSystem);
+
+function loginSystem(){
+
+const input = passwordInput.value.trim();
+
+if(!passwordList.includes(input)){
+
+showPopup("Password salah.");
+
+return;
+
+}
+
+const deviceId = getDeviceId();
+
+if(!accountData[input]){
+
+accountData[input] = {
+
+deviceId:deviceId,
+firstLogin:Date.now()
+
 };
 
-}
-
-function saveAttemptData(data){
-
-localStorage.setItem(LOGIN_ATTEMPT_KEY, JSON.stringify(data));
+saveData();
 
 }
 
-loginBtn.addEventListener("click", loginHandler);
+if(accountData[input].deviceId !== deviceId){
 
-function loginHandler(){
-
-const attemptData = getAttemptData();
-
-if(attemptData.blockedUntil && Date.now() < attemptData.blockedUntil){
-
-const remaining = Math.ceil((attemptData.blockedUntil - Date.now()) / 60000);
-
-showToast(`Login diblokir ${remaining} menit.`);
+showPopup("Password sudah digunakan di perangkat lain.");
 
 return;
 
 }
 
-const password = passwordInput.value.trim();
+const expired =
+accountData[input].firstLogin +
+(30 * 24 * 60 * 60 * 1000);
 
-const encoded = btoa(password);
+if(Date.now() > expired){
 
-const accounts = JSON.parse(localStorage.getItem(STORAGE_KEY));
-
-if(!accounts[encoded]){
-
-attemptData.attempts += 1;
-
-if(attemptData.attempts >= MAX_ATTEMPTS){
-
-attemptData.blockedUntil = Date.now() + BLOCK_TIME;
-
-showToast("Terlalu banyak percobaan. Login diblokir 10 menit.");
-
-}else{
-
-showToast("Password salah.");
-
-}
-
-saveAttemptData(attemptData);
+showPopup("Masa aktif akun telah habis.");
 
 return;
 
 }
 
-attemptData.attempts = 0;
-attemptData.blockedUntil = null;
+localStorage.setItem("loggedInUser",input);
 
-saveAttemptData(attemptData);
+showPopup("Login berhasil.");
 
-const account = accounts[encoded];
-
-const deviceId = generateFingerprint();
-
-if(!account.deviceId){
-
-account.deviceId = deviceId;
-
-account.firstLogin = Date.now();
-
-account.expiredAt = Date.now() + (ACTIVE_DAYS * 24 * 60 * 60 * 1000);
-
-account.active = true;
+openDashboard(input);
 
 }
 
-if(account.deviceId !== deviceId){
+function saveData(){
 
-showToast("Password sudah terdaftar di perangkat lain.");
+localStorage.setItem(
+"accountData",
+JSON.stringify(accountData)
+);
+
+}
+
+function openDashboard(user){
+
+loginPage.classList.add("hidden");
+
+dashboard.classList.remove("hidden");
+
+welcomeText.innerHTML =
+`Login sebagai: <b>${user}</b>`;
+
+startCountdown(user);
+
+}
+
+function startCountdown(user){
+
+setInterval(()=>{
+
+const data = accountData[user];
+
+const end =
+data.firstLogin +
+(30 * 24 * 60 * 60 * 1000);
+
+const diff = end - Date.now();
+
+if(diff <= 0){
+
+countdown.innerText = "Expired";
 
 return;
 
 }
 
-if(Date.now() > account.expiredAt){
+const days =
+Math.floor(diff / (1000*60*60*24));
 
-showToast("Masa aktif akun telah habis.");
+const hours =
+Math.floor((diff/(1000*60*60))%24);
 
-return;
+const minutes =
+Math.floor((diff/(1000*60))%60);
 
-}
+countdown.innerText =
+`${days}H ${hours}J ${minutes}M`;
 
-localStorage.setItem(STORAGE_KEY, JSON.stringify(accounts));
-
-localStorage.setItem(SESSION_KEY, encoded);
-
-showDashboard(encoded);
-
-}
-
-function showDashboard(encoded){
-
-loginSection.classList.add("hidden");
-adminSection.classList.add("hidden");
-
-dashboardSection.classList.remove("hidden");
-
-const password = atob(encoded);
-
-accountInfo.innerText = `Akun aktif: ${password}`;
-
-updateCountdown(encoded);
-
-setInterval(() => {
-updateCountdown(encoded);
-}, 1000);
+},1000);
 
 }
 
-function updateCountdown(encoded){
+const loggedUser =
+localStorage.getItem("loggedInUser");
 
-const accounts = JSON.parse(localStorage.getItem(STORAGE_KEY));
+if(loggedUser){
 
-const account = accounts[encoded];
+if(accountData[loggedUser]){
 
-const remaining = account.expiredAt - Date.now();
+const end =
+accountData[loggedUser].firstLogin +
+(30*24*60*60*1000);
 
-if(remaining <= 0){
+if(Date.now() < end){
 
-showToast("Masa aktif akun telah habis.");
-
-logout();
-
-return;
-
-}
-
-const days = Math.floor(remaining / (1000 * 60 * 60 * 24));
-
-const hours = Math.floor((remaining / (1000 * 60 * 60)) % 24);
-
-const minutes = Math.floor((remaining / (1000 * 60)) % 60);
-
-countdownBox.innerHTML = `Aktif: ${days}H ${hours}J ${minutes}M`;
+openDashboard(loggedUser);
 
 }
 
-function autoLogin(){
-
-const session = localStorage.getItem(SESSION_KEY);
-
-if(!session) return;
-
-const accounts = JSON.parse(localStorage.getItem(STORAGE_KEY));
-
-if(!accounts[session]) return;
-
-if(Date.now() > accounts[session].expiredAt){
-
-localStorage.removeItem(SESSION_KEY);
-
-return;
+}
 
 }
 
-showDashboard(session);
+document.getElementById("logoutBtn")
+.addEventListener("click",()=>{
 
-}
+localStorage.removeItem("loggedInUser");
 
-autoLogin();
-
-logoutBtn.addEventListener("click", logout);
-
-function logout(){
-
-localStorage.removeItem(SESSION_KEY);
-
-dashboardSection.classList.add("hidden");
-
-loginSection.classList.remove("hidden");
-
-}
-
-const menuCards = document.querySelectorAll(".menu-card");
-
-menuCards.forEach(card => {
-
-card.addEventListener("click", () => {
-
-const link = card.dataset.link;
-
-showToast(`Membuka ${link}`);
+location.reload();
 
 });
 
-});
-
-adminBtn.addEventListener("click", () => {
-
-loginSection.classList.add("hidden");
-
-adminSection.classList.remove("hidden");
-
-});
-
-closeAdminBtn.addEventListener("click", () => {
-
-adminSection.classList.add("hidden");
-
-loginSection.classList.remove("hidden");
-
-});
-
-adminLoginSubmit.addEventListener("click", () => {
-
-if(adminPassword.value !== ADMIN_PASSWORD){
-
-showToast("Password admin salah.");
-
-return;
-
-}
-
-adminLoginBox.classList.add("hidden");
-
-adminContent.classList.remove("hidden");
-
-loadAdminTable();
-
-});
-
-function loadAdminTable(){
-
-const accounts = JSON.parse(localStorage.getItem(STORAGE_KEY));
-
-adminTableBody.innerHTML = "";
-
-Object.keys(accounts).forEach(encoded => {
-
-const item = accounts[encoded];
-
-const tr = document.createElement("tr");
-
-const remaining = item.expiredAt
-? getRemaining(item.expiredAt)
-: "Belum digunakan";
-
-tr.innerHTML = `
-<td>${atob(encoded)}</td>
-<td>${item.active ? "Aktif" : "Belum digunakan"}</td>
-<td>${item.firstLogin ? new Date(item.firstLogin).toLocaleString() : "-"}</td>
-<td>${remaining}</td>
-<td>${item.deviceId ? "Terdaftar" : "Belum"}</td>
-`;
-
-adminTableBody.appendChild(tr);
-
-});
-
-}
-
-function getRemaining(timestamp){
-
-const diff = timestamp - Date.now();
-
-if(diff <= 0) return "Expired";
-
-const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-
-return `${days} Hari`;
-
-}
-
-window.addEventListener("contextmenu", e => e.preventDefault());
-
-window.addEventListener("keydown", (e) => {
-
-if(
-e.key === "F12" ||
-(e.ctrlKey && e.shiftKey && e.key === "I") ||
-(e.ctrlKey && e.shiftKey && e.key === "J") ||
-(e.ctrlKey && e.key === "u")
-){
-
+document.addEventListener("contextmenu",e=>{
 e.preventDefault();
+});
 
-showToast("Inspect tidak diizinkan.");
+document.addEventListener("keydown",(e)=>{
 
+if(e.key==="F12"){
+e.preventDefault();
+}
+
+if(e.ctrlKey && e.shiftKey && e.key==="I"){
+e.preventDefault();
+}
+
+if(e.ctrlKey && e.key==="u"){
+e.preventDefault();
 }
 
 });
 
-setInterval(() => {
+document.querySelectorAll(".menu-card")
+.forEach(card=>{
 
-const threshold = 160;
+card.addEventListener("click",()=>{
 
-if(
-window.outerWidth - window.innerWidth > threshold ||
-window.outerHeight - window.innerHeight > threshold
-){
+const target =
+card.getAttribute("data-link");
 
-showToast("Devtools terdeteksi.");
+window.location.href = target;
 
-}
+});
 
-}, 2000);
-
-console.clear();
-
-console.log("PRC Secure System Active");
+});
 
 </script>
 
