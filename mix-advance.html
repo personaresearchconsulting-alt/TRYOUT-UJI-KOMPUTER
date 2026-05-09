@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CAT ADVANCE 100 - Persona Research & Consulting</title>
+    <style>
+        :root { --gold: #C5A059; --navy: #00172D; --ivory: #F3F4F6; --black: #000000; }
+        * { box-sizing: border-box; -webkit-user-select: none; user-select: none; }
+        body { font-family: 'Segoe UI', Arial, sans-serif; background: var(--ivory); color: var(--black); margin: 0; padding: 0; line-height: 1.4; display: flex; flex-direction: column; min-height: 100vh; }
+        .container { width: 100%; max-width: 100%; background: white; margin: 0; padding: 20px; border-top: 6px solid var(--navy); flex: 1; display: flex; flex-direction: column; }
+        .header { text-align: center; border-bottom: 2px solid var(--gold); margin-bottom: 20px; padding-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
+        .header h2 { margin: 0; font-size: 1.2em; font-weight: 900; color: var(--navy); text-transform: uppercase; }
+        .timer-box { background: var(--black); color: #00FF00; padding: 8px 15px; border-radius: 6px; font-family: monospace; font-size: 1.4em; font-weight: bold; }
+        #login-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--navy); display: flex; align-items: center; justify-content: center; z-index: 9999; }
+        .login-box { background: white; padding: 40px; border-radius: 12px; text-align: center; border-top: 5px solid var(--gold); width: 90%; max-width: 500px; box-shadow: 0 10px 25px rgba(0,0,0,0.3); }
+        .login-box input { width: 100%; padding: 15px; margin: 20px 0; border: 2px solid #ddd; border-radius: 6px; font-size: 1.1em; text-align: center; }
+        .q-wrapper { display: none; width: 100%; max-width: 1100px; margin: 0 auto; }
+        .q-wrapper.active { display: block; animation: fadeIn 0.2s; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .q-text-header { font-size: 0.9em; color: var(--gold); font-weight: bold; margin-bottom: 5px; text-transform: uppercase; }
+        .q-text { color: var(--black); font-weight: 600; font-size: 1.4em; margin-bottom: 25px; line-height: 1.5; }
+        .options { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        @media (max-width: 768px) { .options { grid-template-columns: 1fr; } }
+        .options label { display: flex; align-items: center; padding: 16px; background: #fff; border: 1px solid #E5E7EB; border-radius: 8px; cursor: pointer; font-size: 1.05em; transition: 0.2s; }
+        .options label:hover { background: #F9FAFB; border-color: var(--navy); }
+        .options input { margin-right: 15px; transform: scale(1.4); accent-color: var(--navy); }
+        .nav-footer { margin-top: auto; padding-top: 25px; border-top: 1px solid #eee; width: 100%; max-width: 1100px; margin-left: auto; margin-right: auto; }
+        .nav-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(45px, 1fr)); gap: 5px; margin-bottom: 20px; }
+        .nav-grid button { padding: 10px 0; font-size: 0.85em; border: 1px solid #D1D5DB; background: white; cursor: pointer; border-radius: 4px; font-weight: bold; }
+        .nav-grid button.done { background: #10B981; color: white; border-color: #059669; }
+        .nav-grid button.current { border: 2.5px solid var(--gold); background: #FFFBEB; transform: scale(1.05); }
+        .btn-action { background: var(--navy); color: white; border: none; padding: 15px 30px; font-weight: bold; cursor: pointer; border-radius: 6px; font-size: 1em; text-transform: uppercase; transition: 0.3s; }
+        #result-area { display: none; text-align: center; padding: 30px 0; width: 100%; max-width: 1000px; margin: 0 auto; }
+        .score-val { font-size: 6em; font-weight: 900; color: var(--navy); margin: 10px 0; }
+        .rekap-table { width: 100%; border-collapse: collapse; margin-top: 30px; text-align: left; }
+        .rekap-table th { background: var(--navy); color: white; padding: 15px; }
+        .rekap-table td { border: 1px solid #ddd; padding: 20px; }
+        .rev-correct { border-left: 8px solid #10B981 !important; background: #F0FDF4; }
+        .rev-wrong { border-left: 8px solid #DC2626 !important; background: #FEF2F2; }
+    </style>
+</head>
+<body oncontextmenu="return false">
+
+<div id="login-overlay">
+    <div class="login-box">
+        <h2 style="color:var(--navy); margin-top:0;">CAT PERSONA ADVANCE</h2>
+        <p>100 Soal Mahir (Auto-Shuffle System)</p>
+        <input type="text" id="userNameInput" placeholder="Nama Lengkap..." autocomplete="off">
+        <button class="btn-action" style="width:100%" onclick="startQuiz()">MULAI UJIAN</button>
+    </div>
+</div>
+
+<div class="container">
+    <div class="header">
+        <div>
+            <h2>PERSONA RESEARCH & CONSULTING</h2>
+            <small id="userDisplay" style="color: var(--gold); font-weight: bold;"></small>
+        </div>
+        <div class="timer-box" id="timerDisplay">90:00</div>
+    </div>
+
+    <form id="quizForm" onsubmit="return false;">
+        <div id="soalContainer"></div>
+        <div id="result-area">
+            <h2>SKOR AKHIR ANDA</h2>
+            <div class="score-val" id="scoreText">0</div>
+            <button type="button" class="btn-action" onclick="window.print()">CETAK / SIMPAN PDF</button>
+            <button type="button" class="btn-action" onclick="location.reload()">ULANGI</button>
+            <table class="rekap-table">
+                <thead><tr><th>No</th><th>Analisis Soal & Pembahasan</th><th style="text-align:center">Hasil</th></tr></thead>
+                <tbody id="rekapBody"></tbody>
+            </table>
+        </div>
+    </form>
+
+    <div class="nav-footer" id="navFooter">
+        <div style="display: flex; justify-content: space-between; margin-bottom: 20px;">
+            <button class="btn-action" id="prevBtn" onclick="move(-1)" disabled>KEMBALI</button>
+            <button class="btn-action" id="finishBtn" style="background:#DC2626" onclick="finish()">AKHIRI TES</button>
+            <button class="btn-action" id="nextBtn" onclick="move(1)">BERIKUTNYA</button>
+        </div>
+        <div class="nav-grid" id="gridNav"></div>
+    </div>
+</div>
+
+<script>
+    let pesertaName = "";
+    let timeLeft = 5400;
+    const scriptURL = 'https://script.google.com/macros/s/AKfycbxOIRHYtwQDj5-LWObarTyziM-VphwsZoPzS0yTLHcltQCcqWOfd3wy4J7eu9KVSHleyw/exec';
+    
+    // Database Soal
+    const rawQuestions = [
+        {q:"Fitur 'Section Break' tipe 'Continuous' digunakan untuk...", o:["Membuat halaman baru","Membuat kolom berbeda di halaman yang sama","Menghapus penomoran","Membuat daftar isi","Mengatur margin otomatis"], correct: "Membuat kolom berbeda di halaman yang sama", p:"Continuous Break memungkinkan perubahan layout dalam satu halaman yang sama."},
+        {q:"Shortcut untuk membuat garis horizontal lurus dengan mengetik --- 3 kali lalu tekan...", o:["Alt","Shift","Enter","Ctrl","Space"], correct: "Enter", p:"AutoFormat Word mengubah 3 tanda minus menjadi garis lurus saat ditekan Enter."},
+        {q:"Fungsi 'Restrict Editing' pada tab Review digunakan untuk...", o:["Mengunci file","Membatasi jenis perubahan oleh orang lain","Menghapus metadata","Mengganti font","Membuat password"], correct: "Membatasi jenis perubahan oleh orang lain", p:"Membatasi hak akses edit seperti hanya boleh mengisi form atau komentar."},
+        {q:"Jika hasil Mail Merge di Word menampilkan format angka desimal, solusinya adalah...", o:["Ganti font","Gunakan Switch Code @ \"Rp#,##0\"","Hapus data","Print langsung","Copy manual"], correct: "Gunakan Switch Code @ \"Rp#,##0\"", p:"Switch Code digunakan untuk memformat tampilan data dari sumber luar di Word."},
+        {q:"Tombol F7 berfungsi untuk...", o:["Simpan file","Spelling & Grammar","Tutup Word","Cetak","Buka file"], correct: "Spelling & Grammar", p:"Standard shortcut untuk pengecekan ejaan."},
+        {q:"Cara tercepat menyeleksi satu kalimat utuh adalah...", o:["Klik 3 kali","Klik 2 kali","Tahan Ctrl lalu Klik","Tahan Alt","Tahan Shift"], correct: "Tahan Ctrl lalu Klik", p:"Ctrl+Klik akan menyeleksi teks hingga tanda titik terdekat."},
+        {q:"Fitur 'Track Changes' berfungsi untuk...", o:["Hitung kata","Merekam riwayat perubahan dokumen","Ubah bahasa","Kunci file","Filter teks"], correct: "Merekam riwayat perubahan dokumen", p:"Sangat berguna untuk proses revisi kolaboratif."},
+        {q:"Shortcut untuk memindahkan baris tabel ke atas tanpa Cut-Paste adalah...", o:["Alt+Shift+Up","Ctrl+X","Shift+Up","Alt+F4","Ctrl+Home"], correct: "Alt+Shift+Up", p:"Shortcut cerdas untuk memindahkan paragraf atau baris tabel."},
+        {q:"Fungsi 'Gutter Margin' adalah...", o:["Spasi","Ruang untuk jilid buku","Warna kertas","Hapus margin","Kolom"], correct: "Ruang untuk jilid buku", p:"Gutter memberikan ruang ekstra agar teks tidak tertutup saat dijilid."},
+        {q:"Wrap Text 'Tight' digunakan agar...", o:["Teks di atas gambar","Teks mengikuti lekuk tepi gambar","Teks masuk gambar","Gambar transparan","Teks di belakang"], correct: "Teks mengikuti lekuk tepi gambar", p:"Teks akan mengikuti kontur gambar secara rapat."},
+        {q:"Shortcut Ctrl+Shift+C berfungsi untuk...", o:["Copy teks","Copy format (Format Painter)","Hapus teks","Cetak","Buka file"], correct: "Copy format (Format Painter)", p:"Menyalin gaya font/paragraf tanpa menyalin teksnya."},
+        {q:"'Cross-reference' digunakan untuk...", o:["Hapus link","Menghubungkan teks ke item lain secara dinamis","Cari kata","Ubah warna","Cetak"], correct: "Menghubungkan teks ke item lain secara dinamis", p:"Menghubungkan rujukan agar update otomatis."},
+        {q:"Menu pembuatan daftar isi otomatis berada pada tab...", o:["Insert","Design","References","Review","View"], correct: "References", p:"Tab References berisi fitur pengelolaan rujukan ilmiah."},
+        {q:"APA dan MLA diatur pada bagian...", o:["Font","Paragraf","Bibliography Style","Header","Footer"], correct: "Bibliography Style", p:"Pilihan format sitasi standar internasional."},
+        {q:"Dalam paragraf, 'Orphan' berarti...", o:["Tanpa judul","Baris pertama tertinggal di bawah halaman","Baris terakhir di atas","Teks miring","Rata tengah"], correct: "Baris pertama tertinggal di bawah halaman", p:"Baris pertama yang terpisah dari grupnya."},
+        {q:"Soft Return (ganti baris tanpa ganti paragraf) adalah...", o:["Enter","Ctrl+Enter","Shift+Enter","Alt+Enter","Tab"], correct: "Shift+Enter", p:"Shift+Enter hanya pindah baris saja."},
+        {q:"Fitur 'Compare' di Word digunakan untuk...", o:["Hitung gambar","Membandingkan dua dokumen berbeda","Gabung file","Sinonim","Kunci"], correct: "Membandingkan dua dokumen berbeda", p:"Melihat perbedaan antara dua versi dokumen."},
+        {q:"Menu membagi halaman menjadi kolom koran ada di...", o:["Home","Layout","Insert","References","View"], correct: "Layout", p:"Layout > Columns."},
+        {q:"'Replace' dengan mode 'Wildcards' untuk...", o:["Hapus virus","Mencari pola teks kompleks","Ganti warna","Cetak","Hapus gambar"], correct: "Mencari pola teks kompleks", p:"Pencarian tingkat lanjut menggunakan simbol pola."},
+        {q:"Tujuan utama penggunaan 'Styles' adalah...", o:["Warna","Konsistensi format & navigasi","Cegah typo","Hapus gambar","Simpan"], correct: "Konsistensi format & navigasi", p:"Fondasi dokumen terstruktur."},
+        {q:"Shortcut 'Alt+Ctrl+S' berfungsi untuk...", o:["Simpan","Split Window","Print","Tutup","Miring"], correct: "Split Window", p:"Membagi layar kerja menjadi dua jendela."},
+        {q:"Fitur 'Quick Parts' digunakan untuk...", o:["Loading","Simpan blok teks rutin","Edit gambar","Cetak","Email"], correct: "Simpan blok teks rutin", p:"Menyimpan template teks kecil."},
+        {q:"'Bookmarks' digunakan untuk...", o:["Simpan web","Menandai lokasi spesifik dokumen","Hapus teks","Cetak","Tema"], correct: "Menandai lokasi spesifik dokumen", p:"Mempermudah navigasi ke bagian tertentu."},
+        {q:"Ctrl+Spacebar berfungsi untuk...", o:["Spasi","Menghapus format pada teks terpilih","Tutup","Print","Hapus baris"], correct: "Menghapus format pada teks terpilih", p:"Mengembalikan teks ke format normal."},
+        {q:"'Caption' digunakan untuk...", o:["Daftar isi","Label otomatis gambar/tabel","Nomor halaman","Nama file","Judul"], correct: "Label otomatis gambar/tabel", p:"Penomoran otomatis untuk Gambar/Tabel."},
+        {q:"Hasil dari =IF(5>10; 'A'; IF(10<20; 'B'; 'C')) ?", o:["A","B","C","TRUE","FALSE"], correct: "B", p:"Logika 5>10 salah, lanjut ke 10<20 yang benar."},
+        {q:"Rumus menjumlahkan data dengan banyak kriteria adalah...", o:["SUMIF","SUMIFS","COUNTIF","VLOOKUP","INDEX"], correct: "SUMIFS", p:"SUMIFS untuk kriteria jamak."},
+        {q:"Dalam VLOOKUP, angka 0/FALSE di akhir berarti...", o:["Cari mirip","Cari pasti (Exact Match)","Abaikan error","Nol","Urut"], correct: "Cari pasti (Exact Match)", p:"Mencari nilai yang sama persis."},
+        {q:"Cara menghitung sel yang hanya berisi teks adalah...", o:["=COUNT()","=COUNTA()-COUNT()","=SUM()","=COUNTIF()","=AVERAGE()"], correct: "=COUNTA()-COUNT()", p:"COUNTA minus COUNT (angka)."},
+        {q:"Kegunaan utama 'Pivot Table' adalah...", o:["Kunci sel","Ringkas & analisis data besar","Hapus ganda","Cetak","Border"], correct: "Ringkas & analisis data besar", p:"Analisis data dinamis."},
+        {q:"Simbol mengunci alamat sel (Absolut) adalah...", o:["#","@","$","%","&"], correct: "$", p:"Tanda dollar untuk mengunci sel."},
+        {q:"=ROUND(125.456; 2) menghasilkan...", o:["125","125.4","125.45","125.46","130"], correct: "125.46", p:"Pembulatan ke atas pada angka desimal kedua."},
+        {q:"Fitur 'Goal Seek' digunakan untuk...", o:["Hapus virus","Cari input untuk target output","Sorting","Filter","Cetak"], correct: "Cari input untuk target output", p:"What-if analysis."},
+        {q:"Pesan error #VALUE! muncul karena...", o:["Sempit","Tipe data tidak sesuai","Typo","Hilang","Bagi nol"], correct: "Tipe data tidak sesuai", p:"Biasanya teks diproses matematika."},
+        {q:"Kombinasi alternatif VLOOKUP yang lebih fleksibel adalah...", o:["SUM+IF","INDEX+MATCH","COUNT+SUM","LEFT+RIGHT","IF+OR"], correct: "INDEX+MATCH", p:"Pencarian data ke arah manapun."},
+        {q:"=PROPER('persona research') menghasilkan...", o:["PERSONA RESEARCH","persona research","Persona Research","Persona research","pERSONA rESEARCH"], correct: "Persona Research", p:"Kapital huruf awal."},
+        {q:"Shortcut menampilkan seluruh rumus adalah...", o:["Ctrl+R","Ctrl+~","Ctrl+F1","Alt+Enter","Ctrl+P"], correct: "Ctrl+~", p:"Audit rumus sheet."},
+        {q:"'Conditional Formatting' berfungsi untuk...", o:["Kunci","Format otomatis sesuai isi","Hapus","Urut","Print"], correct: "Format otomatis sesuai isi", p:"Visualisasi data berbasis kondisi."},
+        {q:"=DATEDIF(tgl1; tgl2; 'Y') menghitung...", o:["Sisa hari","Sisa bulan","Selisih tahun (usia)","Nama hari","Libur"], correct: "Selisih tahun (usia)","p":"Hitung umur/masa kerja."},
+        {q:"Operator '&' (Ampersand) berfungsi untuk...", o:["Tambah","Gabungkan teks","Bagi","Hapus","Kunci"], correct: "Gabungkan teks", p:"Alternatif Concatenate."},
+        {q:"Dropdown List dibuat melalui...", o:["Any Value","Whole Number","List","Date","Text Length"], correct: "List", p:"Validasi data tipe list."},
+        {q:"=COUNTIF(A1:A10; '>50') menghasilkan...", o:["Total","Jumlah sel di atas 50","Rerata","Maks","Min"], correct: "Jumlah sel di atas 50", p:"Hitung frekuensi kriteria."},
+        {q:"=MID('PELATIHAN'; 3; 3) menghasilkan...", o:["PEL","ATI","LAT","IHA","HAN"], correct: "LAT", p:"Mulai karakter 3 sebanyak 3 huruf."},
+        {q:"Shortcut membuat Chart instan adalah...", o:["F1","F11","F2","Ctrl+G","Alt+F4"], correct: "F11", p:"Grafik otomatis di sheet baru."},
+        {q:"Fungsi 'Freeze Panes' adalah...", o:["Hapus","Kunci baris/kolom judul","Adem","Hapus sheet","Kunci rumus"], correct: "Kunci baris/kolom judul", p:"Keep row/column visible."},
+        {q:"Hasil =NOT(5=5) adalah...", o:["TRUE","FALSE","ERROR","5","0"], correct: "FALSE", p:"Membalik nilai logika."},
+        {q:"Fungsi =IFERROR() digunakan untuk...", o:["Hapus","Ganti tampilan error","Betulkan","Tutup","Cari"], correct: "Ganti tampilan error", p:"Handling error agar rapi."},
+        {q:"Menu menghapus data ganda adalah...", o:["Filter","Sort","Remove Duplicates","Clear","Validate"], correct: "Remove Duplicates", p:"Clean up database."},
+        {q:"=TODAY() menghasilkan...", o:["Jam","Tanggal dinamis hari ini","Hari","Hapus","Sisa"], correct: "Tanggal dinamis hari ini", p:"Update tanggal otomatis."},
+        {q:"Paste Special 'Transpose' berfungsi untuk...", o:["Rumus","Nilai","Ubah kolom jadi baris","Hapus format","Cetak"], correct: "Ubah kolom jadi baris", p:"Rotasi data."},
+        {q:"Kelebihan utama 'Slide Master' adalah...", o:["Video","Konsistensi desain","Hapus animasi","Suara","Simpan"], correct: "Konsistensi desain", p:"Desain global satu file."},
+        {q:"Transisi 'Morph' berfungsi untuk...", o:["Warna","Gerakan halus antar slide","Hapus","Teks","Video"], correct: "Gerakan halus antar slide", p:"Animasi cerdas transisi."},
+        {q:"Agar font tetap muncul di PC lain, gunakan...", o:["Copy font","Embed Fonts","Ganti Arial","Email","Gambar"], correct: "Embed Fonts", p:"Tanamkan font di file."},
+        {q:"'Selection Pane' digunakan untuk...", o:["Warna","Kelola tumpukan objek","Template","Durasi","Hapus"], correct: "Kelola tumpukan objek", p:"Manage layers."},
+        {q:"Menu 'Loop continuously until Esc' agar...", o:["Berhenti","Mengulang terus","Acak","Hapus","Lambat"], correct: "Mengulang terus", p:"Mode kios/pameran."},
+        {q:"Menyisipkan Excel mode 'Link' agar...", o:["Hapus","Update otomatis saat Excel diedit","Ringan","Hilang","Cepat"], correct: "Update otomatis saat Excel diedit", p:"Sinkronisasi data."},
+        {q:"Laser Pointer saat Show menggunakan...", o:["Ctrl+P","Ctrl+L","Ctrl+Klik","Alt+F4","Esc"], correct: "Ctrl+Klik", p:"Shortcut penunjuk."},
+        {q:"'Presenter View' memungkinkan...", o:["Hapus","Lihat catatan & slide nanti","Cetak","Suara","Video"], correct: "Lihat catatan & slide nanti", p:"Dual monitor mode."},
+        {q:"Shortcut duplikasi objek tercepat...", o:["Ctrl+C","Ctrl+V","Ctrl+D","Ctrl+X","Alt+D"], correct: "Ctrl+D", p:"Duplicate (D)."},
+        {q:"'Trigger' digunakan untuk...", o:["Show","Animasi saat objek diklik","Hapus","Volume","Baterai"], correct: "Animasi saat objek diklik", p:"Interaktivitas slide."},
+        {q:"Menu 'Export > Video' merubah PPT ke...", o:["PDF","MP4","Word","Gambar","RAR"], correct: "MP4", p:"PPT to MP4."},
+        {q:"'Sections' berfungsi untuk...", o:["Warna","Kelompokkan slide per bab","Hapus","Video","Tabel"], correct: "Kelompokkan slide per bab", p:"Strukturisasi file."},
+        {q:".ppsx adalah format...", o:["Template","PowerPoint Show (Langsung tayang)","Video","Data","Gambar"], correct: "PowerPoint Show (Langsung tayang)", p:"Auto-run presentation."},
+        {q:"'Motion Paths' adalah animasi...", o:["Masuk","Keluar","Gerak ikut jalur","Putar","Hilang"], correct: "Gerak ikut jalur", p:"Path animation."},
+        {q:"'Eyedropper' berfungsi untuk...", o:["Hapus","Samakan warna persis","Font","Cetak","Bersih"], correct: "Samakan warna persis", p:"Color picker."},
+        {q:"'Smart Lookup' digunakan untuk...", o:["Cari slide","Riset internet di dalam PPT","Typo","Hitung","Kunci"], correct: "Riset internet di dalam PPT", p:"Browsing internal."},
+        {q:"Input grafik di PPT melalui...", o:["Gambar","Chart (Excel mini)","Shapes","Tabel","WordArt"], correct: "Chart (Excel mini)", p:"Data-driven chart."},
+        {q:"'Ink to Shape' merubah...", o:["Suara","Coretan tangan jadi bentuk formal","Video","Hapus","Font"], correct: "Coretan tangan jadi bentuk formal", p:"Sketch to shape."},
+        {q:"Start: 'With Previous' berarti...", o:["Klik","Bersamaan","Setelah","Berhenti","Lambat"], correct: "Bersamaan", p:"Simultaneous animation."},
+        {q:"Cara sembunyikan slide tanpa hapus...", o:["Delete","Hide Slide","Ctrl+H","Kunci","Transparan"], correct: "Hide Slide", p:"Skip slide on show."},
+        {q:".potx adalah ekstensi...", o:["Video","Template desain","Show","Gambar","Audio"], correct: "Template desain", p:"Template format."},
+        {q:"'Record Slide Show' merekam...", o:["Suara saja","Narasi & timing","Video muka","Hapus","Cetak"], correct: "Narasi & timing", p:"Vlogging via PPT."},
+        {q:"'Compress Pictures' untuk...", o:["Bagus","Perkecil ukuran file","Hapus BG","Warna","Simpan"], correct: "Perkecil ukuran file", p:"Optimize size."},
+        {q:"'Picture Layout' merubah gambar jadi...", o:["Video","SmartArt rapi","Satu file","Transparan","Tabel"], correct: "SmartArt rapi", p:"Gallery generator."},
+        {q:"Shortcut 'Alt+Shift+Panah' pada Outline untuk...", o:["Hapus","Geser level bab","Cetak","Simpan","Video"], correct: "Geser level bab", p:"Hierarchy control."},
+        {q:"RAM bersifat 'Volatile', artinya...", o:["Tetap","Data hilang saat mati lampu","Cepat","Air","Hijau"], correct: "Data hilang saat mati lampu", p:"Temporary memory."},
+        {q:"'Overclocking' CPU untuk...", o:["Adem","Tingkatkan kecepatan di atas standar","Hemat","Virus","RAM"], correct: "Tingkatkan kecepatan di atas standar", p:"Performance boost."},
+        {q:"Fungsi 'Firewall' adalah...", o:["Hapus api","Saring trafik data ilegal","Cetak","Simpan","Cepat"], correct: "Saring trafik data ilegal", p:"Network filter."},
+        {q:"Keunggulan SSD dibanding HDD...", o:["Murah","Cepat & tanpa cakram putar","Kecil","Lama","Warna"], correct: "Cepat & tanpa cakram putar", p:"Flash storage vs Disk."},
+        {q:"2FA mewajibkan...", o:["Dua pass","Password + Kode Verifikasi","Hapus 2x","2 laptop","Ganti"], correct: "Password + Kode Verifikasi", p:"Double layered login."},
+        {q:"IP Address adalah...", o:["Merk","Rumah","Identitas unik jaringan","Cepat","Kabel"], correct: "Identitas unik jaringan", p:"Network ID."},
+        {q:"'Ransomware' adalah malware yang...", o:["Iklan","Curi","Enkripsi data & minta uang tebusan","Hapus","Intip"], correct: "Enkripsi data & minta uang tebusan", p:"Data extortion."},
+        {q:"Fungsi VPN adalah...", o:["Gratis","Koneksi aman di publik","Hapus","Buat","Cepat"], correct: "Koneksi aman di publik", p:"Privacy tunnel."},
+        {q:"HDMI mengirimkan...", o:["Suara","Gambar","Audio & Video bersamaan","Listrik","Data"], correct: "Audio & Video bersamaan", p:"AV Standard."},
+        {q:"'Disk Cleanup' berfungsi untuk...", o:["Hapus virus","Hapus file sampah sistem","Edit","Simpan","Cetak"], correct: "Hapus file sampah sistem", p:"System maintenance."},
+        {q:"Operating System (OS) adalah...", o:["Ketik","Software utama pengelola sistem","Mouse","Net","Layar"], correct: "Software utama pengelola sistem", p:"System core."},
+        {q:"Blue Screen (BSOD) menandakan...", o:["Kotor","Error kritis sistem/hardware","Lepas","Klik","Mati"], correct: "Error kritis sistem/hardware", p:"Critical crash."},
+        {q:"'Phishing' adalah upaya...", o:["Mancing","Tipu data via link palsu","Game","Edit","Follower"], correct: "Tipu data via link palsu", p:"Social engineering."},
+        {q:"'Cache' browser berguna untuk...", o:["Pass","Data sementara agar loading web cepat","Hapus","Cari","Kirim"], correct: "Data sementara agar loading web cepat", p:"Local storage web elements."},
+        {q:"Satuan kecepatan internet adalah...", o:["Hertz","Byte","bps (bits per second)","Watt","Volt"], correct: "bps (bits per second)", p:"Bit transfer speed."},
+        {q:"'Motherboard' berfungsi...", o:["Layar","Papan utama koneksi komponen","Simpan","Adem","Input"], correct: "Papan utama koneksi komponen", p:"Mainboard circuit."},
+        {q:"'Incognito' mode bertujuan agar...", o:["Hacker","Browser tidak simpan riwayat/cookies","Gratis","Cepat","Kunci"], correct: "Browser tidak simpan riwayat/cookies", p:"Local privacy."},
+        {q:"BIOS berfungsi untuk...", o:["Foto","Cek hardware saat booting","Word","Cetak","Hapus"], correct: "Cek hardware saat booting", p:"Pre-boot check."},
+        {q:"Kabel tercepat internet adalah...", o:["Tembaga","Fiber Optic","Coaxial","Telp","Listrik"], correct: "Fiber Optic", p:"Light-speed data."},
+        {q:"USB adalah singkatan dari...", o:["United","Universal Serial Bus","Ultra","Unique","Unit"], correct: "Universal Serial Bus", p:"Universal port."},
+        {q:"'Router' berfungsi untuk...", o:["Cetak","Arahkan trafik data antar jaringan","Simpan","Video","Hapus"], correct: "Arahkan trafik data antar jaringan", p:"Traffic routing."},
+        {q:"Manakah layanan Cloud Storage?", o:["Word","Google Drive","Windows","Chrome","CPU"], correct: "Google Drive", p:"Cloud storage."},
+        {q:"Task Manager (Ctrl+Shift+Esc) untuk...", o:["Mati","Kelola proses & beban sistem","Edit","Tabel","Kunci"], correct: "Kelola proses & beban sistem", p:"Resource monitor."},
+        {q:"'Kernel' adalah...", o:["Desktop","Inti OS","Antivirus","Font","Logo"], correct: "Inti OS", p:"Core manager."},
+        {q:"GPU bertugas khusus untuk...", o:["Teks","Proses grafis & video","Listrik","Suara","Cetak"], correct: "Proses grafis & video", p:"Graphics processor."}
+    ];
+
+    let questions = []; 
+    const labels = ["A", "B", "C", "D", "E"];
+
+    function shuffleArray(array) {
+        for (let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]];
+        }
+        return array;
+    }
+
+    function startQuiz() {
+        const input = document.getElementById('userNameInput').value.trim();
+        if(input === "") { alert("Mohon masukkan nama!"); return; }
+        pesertaName = input;
+        
+        questions = rawQuestions.map((item) => {
+            let originalOptions = [...item.o];
+            let shuffledOptions = shuffleArray(originalOptions);
+            let newCorrectLabel = labels[shuffledOptions.indexOf(item.correct)];
+            return {
+                q: item.q,
+                o: shuffledOptions,
+                a: newCorrectLabel,
+                p: item.p,
+                originalCorrectText: item.correct
+            };
+        });
+
+        document.getElementById('login-overlay').style.display = 'none';
+        document.getElementById('userDisplay').textContent = "PESERTA: " + pesertaName.toUpperCase();
+        startTimer();
+        initQuestions();
+    }
+
+    function startTimer() {
+        setInterval(() => {
+            if(timeLeft <= 0) finish();
+            timeLeft--;
+            let m = Math.floor(timeLeft / 60);
+            let s = timeLeft % 60;
+            document.getElementById('timerDisplay').textContent = `${m}:${s < 10 ? '0' : ''}${s}`;
+        }, 1000);
+    }
+
+    function initQuestions() {
+        const cont = document.getElementById('soalContainer');
+        const grid = document.getElementById('gridNav');
+        questions.forEach((s, i) => {
+            const div = document.createElement('div');
+            div.className = `q-wrapper ${i === 0 ? 'active' : ''}`;
+            div.id = `q${i}`;
+            let cat = i < 25 ? "WORD ADVANCE" : i < 50 ? "EXCEL ADVANCE" : i < 75 ? "PPT ADVANCE" : "IT SECURITY & HARDWARE";
+            let optHtml = '';
+            s.o.forEach((opt, idx) => {
+                optHtml += `<label><input type="radio" name="ans${i}" value="${labels[idx]}" onclick="selectAns(${i}, '${labels[idx]}')"> ${labels[idx]}. ${opt}</label>`;
+            });
+            div.innerHTML = `<div class="q-text-header">${cat} | NO. ${i + 1}</div><div class="q-text">${s.q}</div><div class="options">${optHtml}</div>`;
+            cont.appendChild(div);
+            const btn = document.createElement('button');
+            btn.id = `nav${i}`; btn.textContent = i + 1;
+            btn.onclick = () => jump(i);
+            grid.appendChild(btn);
+        });
+        updateUI();
+    }
+
+    let userAnswers = new Array(rawQuestions.length).fill(null);
+    function selectAns(idx, val) {
+        userAnswers[idx] = val;
+        document.getElementById(`nav${idx}`).classList.add('done');
+        if(idx < questions.length - 1) setTimeout(() => move(1), 300);
+    }
+    function jump(idx) {
+        document.querySelector('.q-wrapper.active').classList.remove('active');
+        document.getElementById(`q${idx}`).classList.add('active');
+        currentIdx = idx; updateUI(); window.scrollTo(0,0);
+    }
+    let currentIdx = 0;
+    function move(step) { let t = currentIdx + step; if(t >= 0 && t < questions.length) jump(t); }
+    function updateUI() {
+        document.querySelectorAll('.nav-grid button').forEach(b => b.classList.remove('current'));
+        document.getElementById(`nav${currentIdx}`).classList.add('current');
+        document.getElementById('prevBtn').disabled = currentIdx === 0;
+        document.getElementById('nextBtn').disabled = currentIdx === questions.length - 1;
+    }
+
+    function finish() {
+        if(!confirm("Kirim seluruh jawaban?")) return;
+        
+        const finishBtn = document.getElementById('finishBtn');
+        finishBtn.disabled = true;
+        finishBtn.textContent = "MENGIRIM...";
+
+        let score = 0;
+        const rekap = document.getElementById('rekapBody');
+        rekap.innerHTML = '';
+        
+        questions.forEach((s, i) => {
+            const isCorrect = userAnswers[i] === s.a;
+            if(isCorrect) score++;
+            rekap.innerHTML += `<tr class="${isCorrect ? 'rev-correct' : 'rev-wrong'}"><td>${i+1}</td><td><strong>${s.q}</strong><br><small>Kunci: ${s.a} (${s.originalCorrectText})</small><br><p><em>Pembahasan: ${s.p}</em></p></td><td style="text-align:center">${isCorrect ? 'BENAR' : 'SALAH'}</td></tr>`;
+        });
+
+        // INTEGRASI GOOGLE SHEETS
+        fetch(scriptURL, {
+            method: 'POST',
+            mode: 'no-cors',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ nama: pesertaName, skor: score })
+        })
+        .then(() => {
+            console.log("Data berhasil dikirim");
+            showResults(score);
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showResults(score); // Tetap tampilkan hasil meski fetch gagal
+        });
+    }
+
+    function showResults(score) {
+        document.getElementById('scoreText').textContent = score;
+        document.getElementById('soalContainer').style.display = 'none';
+        document.getElementById('navFooter').style.display = 'none';
+        document.getElementById('result-area').style.display = 'block';
+        window.scrollTo(0,0);
+    }
+</script>
+</body>
+</html>

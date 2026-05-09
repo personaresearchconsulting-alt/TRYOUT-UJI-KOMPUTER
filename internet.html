@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CAT INTERNET - Persona Research & Consulting</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+    <style>
+        :root { --gold: #D4AF37; --ivory: #FFFFF0; --black: #000000; }
+        * { box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Arial, sans-serif; background: var(--ivory); color: var(--black); margin: 0; padding: 10px; line-height: 1.4; display: flex; flex-direction: column; min-height: 100vh; user-select: none; }
+        
+        .container { max-width: 850px; background: white; margin: auto; padding: 15px; border-radius: 10px; border-top: 6px solid var(--black); box-shadow: 0 4px 15px rgba(0,0,0,0.1); flex: 1; display: flex; flex-direction: column; }
+        
+        .header { text-align: center; border-bottom: 2px solid var(--gold); margin-bottom: 15px; padding-bottom: 10px; }
+        .header h2 { margin: 0; font-size: 1.2em; font-weight: 900; text-transform: uppercase; }
+        
+        #login-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--black); display: flex; align-items: center; justify-content: center; z-index: 9999; }
+        .login-box { background: white; padding: 30px; border-radius: 12px; text-align: center; border-top: 5px solid var(--gold); width: 90%; max-width: 400px; }
+        .login-box input { width: 100%; padding: 12px; margin: 15px 0; border: 2px solid #ddd; border-radius: 6px; font-size: 1em; text-align: center; }
+
+        .q-wrapper { display: none; width: 100%; }
+        .q-wrapper.active { display: block; animation: fadeIn 0.2s; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        
+        .q-text { color: var(--black); font-weight: bold; font-size: 1.1em; margin-bottom: 15px; border-left: 4px solid var(--gold); padding-left: 10px; }
+        .options { display: grid; gap: 8px; }
+        .options label { display: flex; align-items: center; padding: 12px; background: #fefefe; border: 1px solid #ddd; border-radius: 8px; cursor: pointer; font-size: 1em; color: var(--black); transition: 0.2s; }
+        .options label:hover { background: #fff9e6; border-color: var(--gold); }
+        .options input { margin-right: 12px; transform: scale(1.3); accent-color: var(--black); }
+
+        .nav-footer { margin-top: 30px; padding-top: 15px; border-top: 1px solid #eee; }
+        .nav-grid { display: grid; grid-template-columns: repeat(10, 1fr); gap: 4px; margin-bottom: 15px; }
+        .nav-grid button { padding: 6px 0; font-size: 0.75em; border: 1px solid #ccc; background: white; cursor: pointer; border-radius: 4px; color: var(--black); }
+        .nav-grid button.done { background: var(--black); color: white; border-color: var(--black); }
+        .nav-grid button.current { border: 2px solid var(--gold); font-weight: bold; }
+
+        .btn-action { background: var(--black); color: white; border: none; padding: 12px 25px; font-weight: bold; cursor: pointer; border-radius: 6px; font-size: 1em; transition: 0.3s; margin: 5px; }
+        .btn-action:hover { background: var(--gold); color: var(--black); }
+        .btn-download { background: #28a745; }
+
+        #result-area { display: none; text-align: center; padding: 20px 0; }
+        .score-val { font-size: 4.5em; font-weight: bold; color: var(--black); margin: 5px 0; }
+        
+        .rekap-table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 0.85em; text-align: left; }
+        .rekap-table th, .rekap-table td { border: 1px solid #ddd; padding: 10px; }
+        .rekap-table th { background: #f2f2f2; text-align: center; }
+        .status-benar { color: green; font-weight: bold; }
+        .status-salah { color: red; font-weight: bold; }
+
+        .page-footer { text-align: center; padding: 15px; font-size: 0.9em; color: var(--black); font-weight: bold; }
+    </style>
+</head>
+<body oncontextmenu="return false" oncopy="return false" oncut="return false">
+
+<div id="login-overlay">
+    <div class="login-box">
+        <h3 style="margin-top:0;">SIMULASI CAT INTERNET</h3>
+        <p>Silakan masukkan nama peserta:</p>
+        <input type="text" id="userNameInput" placeholder="Ketik Nama Lengkap..." autocomplete="off">
+        <button class="btn-action" onclick="startQuiz()">MULAI SIMULASI</button>
+    </div>
+</div>
+
+<div class="container">
+    <div class="header">
+        <h2>PERSONA RESEARCH & CONSULTING</h2>
+        <small style="color: var(--gold); font-weight: bold; letter-spacing: 1px;">MODUL: PENGETAHUAN INTERNET & JARINGAN</small>
+    </div>
+
+    <form id="quizForm">
+        <div id="soalContainer"></div>
+        
+        <div id="result-area">
+            <h3 id="displayUserName" style="margin-bottom:0; color:var(--gold);"></h3>
+            <h2 style="margin:0;">HASIL SIMULASI</h2>
+            <div class="score-val" id="scoreText">0</div>
+            
+            <button type="button" class="btn-action btn-download" onclick="downloadPDF()">DOWNLOAD PDF PEMBAHASAN</button>
+            <button type="button" class="btn-action" onclick="location.reload()">ULANGI TES</button>
+
+            <div style="overflow-x: auto; margin-top: 20px;">
+                <table class="rekap-table" id="tableRekap">
+                    <thead>
+                        <tr>
+                            <th style="width: 50px;">No</th>
+                            <th>Pertanyaan & Pembahasan</th>
+                            <th style="width: 100px;">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="rekapBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </form>
+
+    <div class="nav-footer" id="navFooter">
+        <div style="display: flex; justify-content: space-between; margin-bottom: 15px;">
+            <button class="btn-action" id="prevBtn" onclick="move(-1)" disabled>KEMBALI</button>
+            <button class="btn-action" id="nextBtn" onclick="move(1)">LANJUT</button>
+        </div>
+        <div class="nav-grid" id="gridNav"></div>
+    </div>
+</div>
+
+<footer class="page-footer">
+    Persona Research & Consulting | WA: 0877 4251 5786
+</footer>
+
+<script>
+    let pesertaName = "";
+    // Data Soal dari File INTERNET (Total 135 Soal)
+    const rawQuestions = [
+        {q: "Tombol pada Internet Explorer yang digunakan untuk browsing atau surfing disebut ....", o: ["Go", "Back", "Search", "Refresh"], a: "a"},
+        {q: "Berikut ini merupakan kegunaan dari Web Browser kecuali ....", o: ["Untuk melacak dan mengambil informasi", "Untuk download dan upload informasi", "Untuk melakukan perdagangan/bisnis illegal", "Untuk mengirimkan dan menerima email"], a: "c"},
+        {q: "Perintah atau submenu yang digunakan untuk menampilkan kesalahan kode atau perintah yang dimasukkan adalah .......", o: ["Script debugger", "Source", "Encoding", "Privacy Report"], a: "d"},
+        {q: "Alamat E-Mail mempunyai tiga bagian yaitu identitas pengguna, letak atau lokasi dan yang paling akhir adalah ....", o: ["Jenis protocol", "Nama domain", "Nama group", "Path"], a: "b"},
+        {q: "Berikut adalah cara-cara untuk mendapatkan e-mail, kecuali ......", o: ["Melalui penyedia e-mail gratis", "Melalui ISP (Internet Service Provider)", "Melalui perusahaan", "Melalui operator server"], a: "b"},
+        {q: "Salah satu penyedia layanan search engine adalah:", o: ["Google", "Search Engine", "Search", "Engine"], a: "d"},
+        {q: "Yang bukan penyedia jasa layanan internet adalah", o: ["Telkom", "Indosat", "Indonet", "Kantor pos"], a: "d"},
+        {q: "Sarana diskusi dalam satu kelompok melalui email adalah:", o: ["Mail", "Mailing list atau milis", "Chatting", "Discution"], a: "b"},
+        {q: "Tombol yang digunakan untuk menghentikan proses loading sebuah halaman web adalah:", o: ["Forward", "Back", "Stop", "Home"], a: "c"},
+        {q: "Tombol yang digunakan untuk melihat website yang kita kunjungi beberapa saat terakhir adalah…..", o: ["History", "Favorite", "Media", "Back"], a: "a"},
+        {q: "Berikut ini merupakan sifat-sifat email, kecuali…..", o: ["Sarana komunikasi yang murah", "Dapat dikirim dengan cepat", "Panjang surat yang dikirim dibatasi", "Dapat menyertakan file-file"], a: "c"},
+        {q: "Informasi di web dalam bentuk teks umunya ditulis dalam format:", o: ["CMS", "HTML", "PHP", "FTP"], a: "b"},
+        {q: "Aplikasi internet yang memungkinkan pengambilan file dengan cepat adalah:", o: ["www", "Milis", "Newsgroup", "FTP"], a: "d"},
+        {q: "Port yang digunakan untuk menghubungkan komputer dengan modem eksternal adalah:", o: ["COM1", "COM3", "USB", "Dipasang di mainboard komputer"], a: "c"},
+        {q: "Ciri-ciri ISP yang akan kita pilih di bawah ini, kecuali…..", o: ["Memiliki backbone sendiri", "Akses yang cepat", "Memiliki proxy", "Biaya langganan yang mahal"], a: "d"},
+        {q: "Fitur dari sebuah ISP yang berhubungan dengan keamanan data adalah…..", o: ["Memiliki backbone sendiri", "Akses yang cepat", "Memiliki proxy", "Biaya langganan yang mahal"], a: "c"},
+        {q: "Berikut ini yang mempengaruhi kecepatan akses sebuah ISP, kecuali….", o: ["Bandwidth yang lebar", "Memiliki teknologi kompresi data", "Memiliki server proxy", "Memberikan layanan account email yang besar"], a: "d"},
+        {q: "Berikut ini yang kita masukkan pada saat mensetting koneksi ke ISP, kecuali:", o: ["Nomor ISP address komputer kita", "User name", "Password", "Nomor akses ISP"], a: "a"},
+        {q: "Pilihan yang harus kita buat untuk menambahkan shortcut koneksi ke ISP di desktop adalah:", o: ["Add a shortcut to this connection to my desktop", "Make this the default connection", "Save this user name and password", "Create a shortcut in desktop"], a: "a"},
+        {q: "Nama wizard yang digunakan untuk membuat koneksi ke sebuah ISP adalah:", o: ["Add new hardware wizard", "Found new hardware wizard", "New connection wizard", "Update connection wizard"], a: "c"},
+        {q: "Internet pada awalnya disebut dengan:", o: ["Intranet", "Network", "Computer network", "ARPAnet"], a: "d"},
+        {q: "Berikut ini merupakan kelebihan internet, kecuali:", o: ["Sumber informasi yang tidak terbatas", "Dapat mengirimkan informasi dengan cepat", "Sarana komunikasi yang murah", "Biaya aksesnya mahal"], a: "d"},
+        {q: "Negara yang pertama kali mengembangkan internet adalah:", o: ["China", "Jepang", "India", "Amerika Serikat"], a: "d"},
+        {q: "Penemu World Wide Web adalah:", o: ["Timothy Berners-Lee", "Mark Zuckerberg", "Bill Gates", "Gutenberg"], a: "a"},
+        {q: "Berikut ini yang tidak tergolong Hardware yang dibutuhkan untuk akses internet adalah:", o: ["CPU", "Modem", "Yahoo Messenger", "RAM"], a: "c"},
+        {q: "Sebutan bagi kamera yang gambarnya bisa diakses melalui web atau video call adalah:", o: ["Televisi", "CCTV", "Webcam", "Monitor"], a: "c"},
+        {q: "Yang dimaksud dengan internet adalah:", o: ["Kumpulan komputer dalam ruangan", "Kumpulan komputer tidak terhubung", "Kumpulan komputer saling berhubungan dalam jaringan", "Kumpulan komputer kecepatan sama"], a: "c"},
+        {q: "Pada awalnya internet merupakan jaringan komputer yang dibentuk oleh:", o: ["Dep. Pertahanan Amerika", "Dep. Pertahanan Jepang", "Dep. Pertahanan Rusia", "Dep. Pertahanan Inggris"], a: "a"},
+        {q: "Munculnya internet di awal tahun 60-an melalui proyek yang disebut:", o: ["TCP/IP", "NSFNET", "ARPANET", "BITNET"], a: "c"},
+        {q: "Yang dimaksud dengan dial-up adalah….", o: ["Jaringan tulang punggung", "Program sistem aplikasi", "Koneksi internet melalui modem dan telepon", "Username dan password"], a: "c"},
+        {q: "Data yang keluar masuk / upload – download ke account kita disebut:", o: ["Bandwidth", "Backbone", "Telepon", "Byte"], a: "a"},
+        {q: "Jaringan dasar yang menghubungkan setiap sarana telekomunikasi adalah:", o: ["Bandwidth", "Backbone", "Telepon", "Byte"], a: "b"},
+        {q: "Layanan di internet yang paling tepat digunakan untuk komunikasi adalah:", o: ["Chatting", "Browsing", "FTP", "Email"], a: "a"},
+        {q: "Penyedia Jasa / layanan internet disebut:", o: ["IM2", "Telkom", "Smartfren", "ISP"], a: "d"},
+        {q: "Perangkat yang disiapkan selain komputer dan line telepon untuk koneksi ISP adalah:", o: ["Pesawat telepon", "Adaptor", "Handphone", "Modem"], a: "d"},
+        {q: "Browser bawaan default Windows adalah:", o: ["Mozilla Firefox", "Opera", "Google Chrome", "Internet Explorer"], a: "d"},
+        {q: "Tempat pada Internet Explorer untuk menuliskan alamat suatu situs adalah:", o: ["Status bar", "Menu bar", "Access bar", "Address bar"], a: "d"},
+        {q: "Istilah mouse over pada halaman web ditandai dengan:", o: ["Efek suara", "Perubahan warna tombol saat kursor diarahkan", "Gerakan kursor", "Menu baru muncul"], a: "b"},
+        {q: "Fungsi dari modem adalah:", o: ["Merubah sinyal analog ke digital dan sebaliknya", "Merubah sinyal listrik ke suara", "Sinyal mikro ke makro", "Sinyal bunyi ke listrik"], a: "a"},
+        {q: "Bagian jendela browser untuk menampilkan proses loading halaman web adalah:", o: ["Tool bar", "Status bar", "Task bar", "Address bar"], a: "b"},
+        {q: "Layanan koneksi yang menumpang pada jaringan telepon adalah:", o: ["Dial-up", "Lease line", "Fix phone", "Temporary"], a: "a"},
+        {q: "Protokol standar internasional untuk komunikasi data adalah:", o: ["GPRS", "NWLink", "TCP/IP", "CDMA"], a: "c"},
+        {q: "Program aplikasi browser, kecuali:", o: ["Mozilla Firefox", "Opera", "Ms. Outlook", "Safari"], a: "c"},
+        {q: "Perusahaan penyedia jasa menghubungkan komputer ke internet adalah:", o: ["TCP/IP", "Internet Service Provider", "Domain", "Internet Provider"], a: "b"},
+        {q: "Pengertian dari internet adalah:", o: ["Jaringan Facebook", "Situs web saja", "Konektifitas komputer seluruh dunia", "Jaringan sosial komputer"], a: "c"},
+        {q: "Koneksi komputer dapat dilakukan melalui berikut, kecuali:", o: ["Kabel LAN", "Wireless", "Bluetooth", "Kabel listrik"], a: "d"},
+        {q: "Koneksi komputer menggunakan kabel dan hub switch dalam satu ruangan disebut:", o: ["LAN", "MAN", "WAN", "SWAN"], a: "a"},
+        {q: "Di bawah ini merupakan topologi jaringan, kecuali:", o: ["Star", "Tree", "Ring", "LAN"], a: "d"},
+        {q: "Alat untuk membagi jaringan internet ke komputer client menggunakan:", o: ["Switch hub", "LAN card", "Wireless USB", "RJ45"], a: "a"},
+        {q: "Kepanjangan modem adalah:", o: ["Modul demolator", "Model demolator", "Modem demodulator", "Modulator-demodulator"], a: "d"},
+        {q: "Tombol untuk mengecek apakah ID e-mail masih tersedia atau tidak:", o: ["Check availability", "Continue registration", "Advanced search", "Language tools"], a: "a"},
+        {q: "Untuk menuliskan alamat e-mail yang dituju ada pada kotak:", o: ["To", "Subject", "Cc", "Bcc"], a: "a"},
+        {q: "www singkatan dari:", o: ["World Wird Wide", "Word Wide Web", "World Wireless Web", "World Wide Web"], a: "d"},
+        {q: "Singkatan yang tepat dari URL adalah:", o: ["Uniform Resource Locator", "Unit Resource Lost", "Undelete Run Left", "Universal Run Locator"], a: "b"},
+        {q: "Peralatan praktis untuk konektifitas internet saat bepergian:", o: ["Laptop", "PDA", "TV", "Modem"], a: "d"},
+        {q: "Perangkat lunak untuk browsing internet:", o: ["Blogger", "Gmail", "MSN", "Internet Explorer"], a: "d"},
+        {q: "Cara membuka aplikasi internet explorer:", o: ["Start > Word", "Start > Internet Explorer", "Start > PPT", "Start > Excel"], a: "b"},
+        {q: "Satuan kecepatan transfer data adalah:", o: ["GPRS", "BPS", "ISP", "DSL"], a: "b"},
+        {q: "Yahoo, MSN, dan Google merupakan:", o: ["Search engine", "Situs", "URL", "ISP"], a: "a"},
+        {q: "Alat untuk mengubah data digital menjadi analog adalah:", o: ["Modem", "Router", "Hub", "Telepon"], a: "a"},
+        {q: "Perangkat keras untuk menghubungkan antar komputer (jaringan lokal):", o: ["LAN card", "Modem", "Konektor RJ45", "Kabel UTP"], a: "a"},
+        {q: "Kepanjangan www adalah:", o: ["World weight wide", "World wide weight", "World web wide", "World wide web"], a: "d"},
+        {q: "Penamaan alamat website disebut:", o: ["ULS", "ULV", "URL", "URR"], a: "c"},
+        {q: "Alamat website pemberi jasa email gratis adalah:", o: ["diknas.go.id", "depag.go.id", "panselnas.go.id", "gmail.com"], a: "d"},
+        {q: "Maksud dari live streaming adalah:", o: ["Live di TV", "Video download", "Melihat langsung di web tanpa download", "Nonton TV di PC"], a: "a"},
+        {q: "Fasilitas pencarian website dengan keyword menggunakan:", o: ["Blogger", "Email", "Facebook", "Chrome"], a: "d"},
+        {q: "Akun email yang diminta untuk login adalah:", o: ["Username & email", "Email & website", "Nama & email", "Email & password"], a: "d"},
+        {q: "Fungsi attachment dalam email adalah:", o: ["Alamat banyak", "Menambahkan foto/file", "Nama lengkap", "Data email"], a: "b"},
+        {q: "Jenis layanan internet tanpa kabel:", o: ["Wireless", "Hotspot", "Night Server", "Dial up"], a: "b"},
+        {q: "Bahasa pemrograman untuk membuat halaman Web:", o: ["URL", "FTP", "HTTP", "HTML"], a: "d"},
+        {q: "Sistem penamaan alamat internet disebut:", o: ["URL", "FTP", "HTTP", "WWW"], a: "a"},
+        {q: "Alat mentransmisikan data elektromagnetik dari internet ke komputer:", o: ["Switch", "Modem", "Splitter", "Ethernet card"], a: "d"},
+        {q: "Topologi LAN yang banyak dipakai di warnet adalah:", o: ["Bus", "Star", "Ring", "Peer to peer"], a: "b"},
+        {q: "Elemen pada search engine kecuali:", o: ["Tombol save pencarian", "Tombol find", "Kotak teks kata kunci", "Link pencarian canggih"], a: "a"},
+        {q: "Perintah Save As untuk menyimpan halaman Web menampilkan kotak dialog:", o: ["Open", "Save", "Save As", "Save Web Page"], a: "d"},
+        // Bagian Tambahan 1 (Internet Sejarah)
+        {q: "Internet sudah digunakan sejak tahun:", o: ["1960", "1970", "1980", "1990"], a: "b"},
+        {q: "Internet merupakan singkatan dari:", o: ["International Network", "Integration Network", "Internal Network", "Interconnection Network"], a: "d"},
+        {q: "Pengertian Internet secara umum adalah:", o: ["Kumpulan jaringan komputer terhubung sistem", "Kumpulan tidak terhubung", "Jaringan dunia sistem", "Jaringan terbesar dunia"], a: "a"},
+        {q: "Penjelasan Intranet yang salah adalah:", o: ["Jaringan lokal TCP/IP", "Milik kelompok/perusahaan", "Tidak dapat terkoneksi internet", "Fasilitas sama dengan internet"], a: "c"},
+        {q: "Sistem DNS mulai dikembangkan pada tahun:", o: ["1982", "1984", "1992", "1994"], a: "b"},
+        {q: "Jaringan yang menampilkan data dan informasi melalui internet disebut:", o: ["World wide web", "Web site", "Web page", "Web"], a: "d"},
+        {q: "Pengertian dari download adalah:", o: ["Kirim data ke website", "Ambil data dari website ke komputer", "Aplikasi jelajah", "Surat elektronik"], a: "b"},
+        {q: "Forum atau kelompok diskusi di Internet disebut:", o: ["Mailing list", "Chatting", "Search engine", "URL"], a: "a"},
+        {q: "Keunggulan internet kecuali:", o: ["Jangkauan umum", "Online 24 jam", "Penyebaran virus", "Komunikasi interaktif"], a: "c"},
+        {q: "Satuan kecepatan akses Internet adalah:", o: ["Kilobits", "Meter per second", "Megabits per meter", "Kilobits per second"], a: "d"},
+        // Bagian Tambahan 2 (Lainnya)
+        {q: "Tiga syarat membuat blog kecuali:", o: ["Punya email", "Nama blog", "Pilih template", "Masukkan foto"], a: "d"},
+        {q: "Aplikasi internet untuk kirim surat elektronik:", o: ["Email", "Gopher", "WWW", "Telnet"], a: "a"},
+        {q: "Radius sinyal Wifi dari titik akses biasanya adalah:", o: ["100 m", "150 m", "1 km", "5 km"], a: "a"},
+        {q: "Perangkat pada hotspot Wifi kecuali:", o: ["WiFi card", "Access point", "Access controller", "Internet link"], a: "a"},
+        {q: "Kelebihan modem internal adalah:", o: ["Mudah dipasang", "Harganya lebih murah", "Akses lebih tinggi", "Banyak merek"], a: "b"},
+        {q: "Jaringan yang mencakup sebuah negara disebut:", o: ["LAN", "MAN", "WAN", "Internet"], a: "c"},
+        {q: "Manfaat jaringan komputer kecuali:", o: ["Berbagi sumber daya", "Data bersama", "Keandalan tinggi", "Akses data orang lain tanpa izin"], a: "d"},
+        {q: "Yang dimaksud dengan Gopher adalah:", o: ["Akses informasi komputer lain", "Surat elektronik", "Mencari/mengambil info komputer lain", "Chatting"], a: "c"},
+        {q: "Nama domain untuk organisasi militer adalah:", o: [".gov", ".net", ".mil", ".org"], a: "c"},
+        {q: "Nomor telepon akses TELKOMnet Instan adalah:", o: ["0809 9 8888", "0809 8 9999", "0806 1 2345", "147"], a: "b"},
+        {q: "Negara pengguna Internet terbesar (pilihan China) adalah:", o: ["China", "Jepang", "India", "Amerika Serikat"], a: "a"},
+        {q: "Media untuk bercakap-cakap di internet (teks langsung) disebut:", o: ["Mail", "Milis", "Chatting", "Discussion"], a: "c"}
+    ];
+
+    function startQuiz() {
+        const input = document.getElementById('userNameInput').value.trim();
+        if(input === "") { alert("Mohon masukkan nama Anda!"); return; }
+        pesertaName = input;
+        document.getElementById('login-overlay').style.display = 'none';
+        document.getElementById('displayUserName').textContent = "PESERTA: " + pesertaName.toUpperCase();
+    }
+
+    function shuffle(a) { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+    const questions = shuffle([...rawQuestions]);
+    let currentIdx = 0;
+    const cont = document.getElementById('soalContainer');
+    const grid = document.getElementById('gridNav');
+
+    questions.forEach((s, i) => {
+        const div = document.createElement('div');
+        div.className = `q-wrapper ${i === 0 ? 'active' : ''}`;
+        div.id = `q${i}`;
+        let optHtml = '';
+        s.o.forEach((opt, idx) => {
+            const code = String.fromCharCode(97 + idx);
+            optHtml += `<label><input type="radio" name="ans${i}" value="${code}" onclick="handleAutoNext(${i})">${code.toUpperCase()}. ${opt}</label>`;
+        });
+        div.innerHTML = `<div class="q-text">${i + 1}. ${s.q}</div><div class="options">${optHtml}</div>`;
+        cont.appendChild(div);
+        const btn = document.createElement('button');
+        btn.id = `nav${i}`; btn.textContent = i + 1;
+        btn.onclick = () => jump(i);
+        grid.appendChild(btn);
+    });
+
+    function jump(idx) {
+        document.querySelector('.q-wrapper.active').classList.remove('active');
+        document.getElementById(`q${idx}`).classList.add('active');
+        currentIdx = idx; updateUI(); window.scrollTo(0,0);
+    }
+    function move(step) { let t = currentIdx + step; if(t >= 0 && t < questions.length) jump(t); }
+    function handleAutoNext(idx) { document.getElementById(`nav${idx}`).classList.add('done'); if(idx < questions.length - 1) setTimeout(() => move(1), 400); }
+    function updateUI() {
+        document.querySelectorAll('.nav-grid button').forEach(b => b.classList.remove('current'));
+        document.getElementById(`nav${currentIdx}`).classList.add('current');
+        document.getElementById('prevBtn').disabled = currentIdx === 0;
+        const nBtn = document.getElementById('nextBtn');
+        if(currentIdx === questions.length - 1) { nBtn.textContent = 'SELESAI'; nBtn.onclick = finish; }
+        else { nBtn.textContent = 'LANJUT'; nBtn.onclick = () => move(1); }
+    }
+
+    function finish() {
+        let benar = 0; const rekap = document.getElementById('rekapBody'); rekap.innerHTML = '';
+        questions.forEach((s, i) => {
+            const sel = document.querySelector(`input[name="ans${i}"]:checked`);
+            const uAnsVal = sel ? sel.value : null;
+            const uAnsText = sel ? s.o[uAnsVal.charCodeAt(0) - 97] : "Tidak Dijawab";
+            const cAnsText = s.o[s.a.charCodeAt(0) - 97];
+            const isC = uAnsVal === s.a; if(isC) benar++;
+            rekap.innerHTML += `<tr><td style="text-align:center">${i+1}</td><td><strong>${s.q}</strong><br><span style="color: ${isC ? 'green' : 'red'}">Jawaban Anda: ${uAnsText}</span><br><span style="color: black">Kunci Jawaban: ${cAnsText}</span></td><td style="text-align:center" class="${isC?'status-benar':'status-salah'}">${isC?'BENAR':'SALAH'}</td></tr>`;
+        });
+        document.getElementById('scoreText').textContent = ((benar / questions.length) * 100).toFixed(1);
+        document.getElementById('soalContainer').style.display = 'none';
+        document.getElementById('navFooter').style.display = 'none';
+        document.getElementById('result-area').style.display = 'block';
+        window.scrollTo(0,0);
+    }
+
+    async function downloadPDF() {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+        doc.setFontSize(16);
+        doc.text("HASIL SIMULASI CAT INTERNET", 105, 15, { align: "center" });
+        doc.setFontSize(10);
+        doc.text("Nama Peserta: " + pesertaName.toUpperCase(), 105, 23, { align: "center" });
+        doc.text("Skor: " + document.getElementById('scoreText').textContent, 105, 28, { align: "center" });
+        
+        const rows = [];
+        questions.forEach((s, i) => {
+            const sel = document.querySelector(`input[name="ans${i}"]:checked`);
+            const uAnsVal = sel ? sel.value : null;
+            const uAnsText = sel ? s.o[uAnsVal.charCodeAt(0) - 97] : "-";
+            const cAnsText = s.o[s.a.charCodeAt(0) - 97];
+            rows.push([i+1, s.q + "\nJawab: " + uAnsText + " | Kunci: " + cAnsText, uAnsVal === s.a ? "BENAR" : "SALAH"]);
+        });
+
+        doc.autoTable({
+            head: [['No', 'Pertanyaan & Jawaban', 'Status']],
+            body: rows, startY: 35, theme: 'grid', headStyles: { fillColor: [0, 0, 0] },
+            columnStyles: { 0: { cellWidth: 10 }, 2: { cellWidth: 20 } }
+        });
+        doc.save("CAT_Internet_" + pesertaName + ".pdf");
+    }
+    updateUI();
+</script>
+</body>
+</html>

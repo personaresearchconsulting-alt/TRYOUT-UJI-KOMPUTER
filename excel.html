@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CAT MS EXCEL - Persona Research & Consulting</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+    <style>
+        :root { --gold: #D4AF37; --ivory: #FFFFF0; --black: #000000; }
+        * { box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Arial, sans-serif; background: var(--ivory); color: var(--black); margin: 0; padding: 10px; line-height: 1.4; display: flex; flex-direction: column; min-height: 100vh; }
+        
+        .container { max-width: 850px; background: white; margin: auto; padding: 15px; border-radius: 10px; border-top: 6px solid var(--black); box-shadow: 0 4px 15px rgba(0,0,0,0.1); flex: 1; display: flex; flex-direction: column; }
+        
+        .header { text-align: center; border-bottom: 2px solid var(--gold); margin-bottom: 15px; padding-bottom: 10px; }
+        .header h2 { margin: 0; font-size: 1.2em; font-weight: 900; text-transform: uppercase; }
+        
+        /* Overlay Login */
+        #login-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--black); display: flex; align-items: center; justify-content: center; z-index: 9999; }
+        .login-box { background: white; padding: 30px; border-radius: 12px; text-align: center; border-top: 5px solid var(--gold); width: 90%; max-width: 400px; }
+        .login-box input { width: 100%; padding: 12px; margin: 15px 0; border: 2px solid #ddd; border-radius: 6px; font-size: 1em; text-align: center; }
+
+        .q-wrapper { display: none; width: 100%; }
+        .q-wrapper.active { display: block; animation: fadeIn 0.2s; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        
+        .q-text { color: var(--black); font-weight: bold; font-size: 1.1em; margin-bottom: 15px; border-left: 4px solid var(--gold); padding-left: 10px; }
+        .options { display: grid; gap: 8px; }
+        .options label { display: flex; align-items: center; padding: 12px; background: #fefefe; border: 1px solid #ddd; border-radius: 8px; cursor: pointer; font-size: 1em; color: var(--black); transition: 0.2s; }
+        .options label:hover { background: #fff9e6; border-color: var(--gold); }
+        .options input { margin-right: 12px; transform: scale(1.3); accent-color: var(--black); }
+
+        .nav-footer { margin-top: 30px; padding-top: 15px; border-top: 1px solid #eee; }
+        .nav-grid { display: grid; grid-template-columns: repeat(10, 1fr); gap: 4px; margin-bottom: 15px; }
+        .nav-grid button { padding: 6px 0; font-size: 0.75em; border: 1px solid #ccc; background: white; cursor: pointer; border-radius: 4px; color: var(--black); }
+        .nav-grid button.done { background: var(--black); color: white; border-color: var(--black); }
+        .nav-grid button.current { border: 2px solid var(--gold); font-weight: bold; }
+
+        .btn-action { background: var(--black); color: white; border: none; padding: 12px 25px; font-weight: bold; cursor: pointer; border-radius: 6px; font-size: 1em; transition: 0.3s; margin: 5px; }
+        .btn-action:hover { background: var(--gold); color: var(--black); }
+        .btn-download { background: #28a745; }
+
+        #result-area { display: none; text-align: center; padding: 20px 0; }
+        .score-val { font-size: 4.5em; font-weight: bold; color: var(--black); margin: 5px 0; }
+        
+        .rekap-table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 0.85em; text-align: left; }
+        .rekap-table th, .rekap-table td { border: 1px solid #ddd; padding: 10px; }
+        .rekap-table th { background: #f2f2f2; text-align: center; }
+        .status-benar { color: green; font-weight: bold; }
+        .status-salah { color: red; font-weight: bold; }
+
+        .page-footer { text-align: center; padding: 15px; font-size: 0.9em; color: var(--black); font-weight: bold; background: transparent; }
+    </style>
+</head>
+<body oncontextmenu="return false">
+
+<div id="login-overlay">
+    <div class="login-box">
+        <h3 style="margin-top:0;">SELAMAT DATANG</h3>
+        <p>Silakan masukkan nama peserta:</p>
+        <input type="text" id="userNameInput" placeholder="Ketik Nama Lengkap..." autocomplete="off">
+        <button class="btn-action" onclick="startQuiz()">MULAI SIMULASI</button>
+    </div>
+</div>
+
+<div class="container">
+    <div class="header">
+        <h2>PERSONA RESEARCH & CONSULTING</h2>
+        <small style="color: var(--gold); font-weight: bold; letter-spacing: 1px;">SIMULASI CAT MS EXCEL - PEMBAHASAN</small>
+    </div>
+
+    <form id="quizForm">
+        <div id="soalContainer"></div>
+        
+        <div id="result-area">
+            <h3 id="displayUserName" style="margin-bottom:0; color:var(--gold);"></h3>
+            <h2 style="margin:0;">HASIL SIMULASI</h2>
+            <div class="score-val" id="scoreText">0</div>
+            
+            <button type="button" class="btn-action btn-download" onclick="downloadPDF()">DOWNLOAD PDF PEMBAHASAN</button>
+            <button type="button" class="btn-action" onclick="location.reload()">ULANGI TES</button>
+
+            <div style="overflow-x: auto; margin-top: 20px;">
+                <table class="rekap-table" id="tableRekap">
+                    <thead>
+                        <tr>
+                            <th style="width: 50px;">No</th>
+                            <th>Pertanyaan & Pembahasan</th>
+                            <th style="width: 100px;">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="rekapBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </form>
+
+    <div class="nav-footer" id="navFooter">
+        <div style="display: flex; justify-content: space-between; margin-bottom: 15px;">
+            <button class="btn-action" id="prevBtn" onclick="move(-1)" disabled>KEMBALI</button>
+            <button class="btn-action" id="nextBtn" onclick="move(1)">LANJUT</button>
+        </div>
+        <div class="nav-grid" id="gridNav"></div>
+    </div>
+</div>
+
+<footer class="page-footer">
+    Persona Research & Consulting | WA: 0877 4251 5786
+</footer>
+
+<script>
+    let pesertaName = "";
+    const rawQuestions = [
+        {q: "Berikut ini yang tidak dapat digunakan untuk menjalankan excel adalah", o: ["Shortcut excel di desktop", "Start menu", "File excel", "Dokumen word"], a: "d"},
+        {q: "Untuk menampilkan toolbar dilakukan di menu", o: ["Insert", "View", "Format", "Data"], a: "c"},
+        {q: "Fungsi yang digunakan untuk menghitung rata-rata data angka", o: ["Sum", "Max", "Min", "Average"], a: "d"},
+        {q: "Fungsi yang digunakan untuk menghitung banyak data dalam range tertentu", o: ["Count", "Large", "Small", "Rank"], a: "d"},
+        {q: "Baris yang digunakan untuk menampilkan informasi mengenai isi sel yang sedang aktif di lembar kerja:", o: ["Formula bar", "Toolbar", "Scroll bar", "Menu bar"], a: "a"},
+        {q: "Untuk mengakhiri Excel dapat menekan tombol:", o: ["Alt + F4", "Ctrl + F4", "Alt + F2", "Ctrl + F2"], a: "a"},
+        {q: "Untuk mengedit sel, kita dapat menggunakan tombol:", o: ["F1", "F2", "F3", "F4"], a: "b"},
+        {q: "Yang bukan termasuk fungsi statistik di bawah ini adalah", o: ["If", "Large", "Small", "Rank"], a: "d"},
+        {q: "Fungsi yang digunakan untuk mengambil bagian kiri dari data teks sebanyak karakter tertentu", o: ["Left", "Right", "Mid", "Value"], a: "a"},
+        {q: "Untuk menghitung rata-rata dalam suatu range kita menggunakan formula…", o: ["=sum()", "=max()", "=count()", "=average()"], a: "d"},
+        {q: "Microsoft Excel merupakan progran aplikasi...", o: ["Wordprosesor", "Presentasi", "Animasi", "Spreadsheet"], a: "d"},
+        {q: "Tombol manajemen berkas dokumen pada Microsof Office Excel berbentuk bulat dengan logo Office di tengahnya disebut .…", o: ["Excel Options", "Office Button", "Ribbon", "Title Bar"], a: "b"},
+        {q: "Ikon “save”, “redo”, dan “undo” merupakan bagian menu dari ….", o: ["Ribbon", "Office Button", "Status Bar", "Quick Access Toolbar"], a: "d"},
+        {q: "Untuk mengubah satuan ukuran di dalam Excel, digunakan perintah ….", o: ["Start–Setting–Control Panel–Regional–Currency", "Tools–Options–Print", "Office Button–Open", "Office Button–Excel Options–Advanced–Display–Ruler Units"], a: "d"},
+        {q: "Untuk memberi bingkai pada sel, menu yang harus dipilih pada kotak dialog Format Cells adalah ….", o: ["Number", "Alignment", "Borders", "Button"], a: "c"},
+        {q: "Menu yang harus dipilih untuk memperlebar atau mempersempit ukuran kolom pada worksheet adalah ….", o: ["Insert Sheet Column", "Insert Sheet", "Borders", "Column Width"], a: "d"},
+        {q: "Untuk menambah garis dalam Excel, perintah yang diklik pada menu Insert adalah ….", o: ["Insert Cells", "Insert Sheet Rows", "Insert Sheet Column", "Insert Sheet"], a: "b"},
+        {q: "Berikut merupakan tombol yang digunakan dalam memformat teks agar menjadi miring, yaitu ….", o: ["Ctrl+B", "Ctrl+I", "Ctrl+U", "Ctrl+S"], a: "b"},
+        {q: "Pengertian dari range adalah ….", o: ["Pertemuan antara worksheet", "Pertemuan antara workbook", "Kumpulan sel sembarang", "Kumpulan sel berbentuk persegi panjang"], a: "d"},
+        {q: "Apa yang dimaksud dengan sel (Cell) dalam excel ?", o: ["Kumpulan dari worksheet", "Kumpulan beberapa sel", "Pertemuan antara baris dengan kolom", "Pertemuan antara sel dengan range"], a: "c"},
+        {q: "Toolbar yang ditampilkan secara default di jendela Excel adalah toolbar …", o: ["Start", "Chart dan formatting", "Standard dan chart", "Formatting dan standard"], a: "d"},
+        {q: "Bagian Excel yang digunakan untuk menggerakkan lembaran kerja dalam arah horizontal adalah …", o: ["Kontrol lembaran", "Full screen", "Scroll bar vertical", "Scroll bar horizontal"], a: "d"},
+        {q: "Bagian jendela excel yang berfungsi untuk menampilkan alamat sel yang sedang aktif adalah", o: ["Bar rumus", "Bar nama", "Bar status", "Bar judul"], a: "c"},
+        {q: "Bagian excel yang digunakan untuk mengerakan lembaran kerja dalam arah horizontal adalah", o: ["Scroll bar vertical", "Scroll bar horizontal", "Control lembaran kerja", "Taks pane"], a: "b"},
+        {q: "Tombol yang digunakan untuk menjalankan sebuah perintah disebut", o: ["Menu bar", "Toolbar", "Statusbar", "Formula bar"], a: "a"},
+        {q: "Perbesaran lembaran kerja diatur dengan menggunakan perintah", o: ["Customs view", "Full screen", "Zoom", "View sheets"], a: "c"},
+        {q: "Formula bar dapat diatur ditampilkan atau tidak ditampilkan. Perintah menampilkan kotak dialog options terdapat di menu", o: ["View", "Format", "Insert", "Tools"], a: "a"},
+        {q: "Toolbar yang ditampilkan secara default di jendela excel adalah toolbar", o: ["Formatting dan standard", "Standard dan chart", "Chart dan formatting", "Standard"], a: "a"},
+        {q: "Bagian jendela excel yang diklik untuk menampilkan lembaran kerja yang tidak aktif adalah", o: ["Scroll bar lembaran kerja", "Tab lembaran kerja", "Control jendela lembaran kerja", "Menu bar"], a: "b"},
+        {q: "Perintah open selain dari menu file dapat juga dijalankan dengan menekan tombol… di keyboard.", o: ["Ctrl V", "Ctrl O", "Ctrl U", "Ctrl B"], a: "b"},
+        {q: "Perintah untuk menambahkan header and footer dijalankan dari menu", o: ["File", "Insert", "View", "Format"], a: "b"},
+        {q: "Perintah yang digunakan untuk membatalkan perintah yang sudah terlanjur diberikan adalah :", o: ["Undo", "Redo", "Copy", "Paste"], a: "a"},
+        {q: "Berikut ini tombol yang dapat digunakan untuk menggeser sel yang aktif adalah", o: ["Tombol enter", "Tombol tab", "Tombol arah", "Semua benar"], a: "d"},
+        {q: "Salah satu cara untuk memilih seluruh data di lemburan kerja adalah dengan menekan tombol… di keyboard.", o: ["Ctrl S", "Ctrl P", "Ctrl B", "Ctrl A"], a: "d"},
+        {q: "Perintah yang digunakan untuk menggandakan data adalah", o: ["Cut dan paste", "Copy dan paste", "Copy dan cut", "Select all dan copy"], a: "b"},
+        {q: "Memindahkan data dapat juga dilakukan dengan cara menjalankan perintah", o: ["Cut dan paste", "Copy dan paste", "Copy dan cut", "Select all dan cut"], a: "a"},
+        {q: "Mengatur lebar kolom dimulai dengan mengklik menu", o: ["Insert", "Format", "Data", "Table"], a: "b"},
+        {q: "Mengatur tanda decimal dan ribuan yang digunakan di lakukan di kotak dialog", o: ["Options", "Format cells", "Print", "Page setup"], a: "a"},
+        {q: "Menambahkan tanda pemisah ribuan ke data yang di lembaran kerja dilakukan di kotak dialog", o: ["Options", "Format cells", "Data edit", "Page setup"], a: "b"},
+        {q: "Mengatur tanda rupiah untuk data yang berupa uang dilakukan di kotak dialog", o: ["Options", "Format cells", "Print", "Page setup"], a: "b"},
+        {q: "Perintah page setup dijalankan dari menu", o: ["File", "Insert", "Page layout", "Format"], a: "c"},
+        {q: "Jika kita mempunyai table yang melebar ke samping, maka sebaiknya kita memilih orientasi kertas", o: ["Landscape", "Portrait", "Tegak", "Bagi dua"], a: "a"},
+        {q: "Perintah yang digunakan untuk menampilkan angka dengan format tampilan menggunakan lambang uang adalah:", o: ["Currency", "Percent Style", "Comma Style", "Dollar"], a: "a"},
+        {q: "Print preview digunakan untuk", o: ["Melihat tampilan halaman sebelum dicetak", "Mencetak lembaran kerja", "Mencetak bagian lembaran kerja tertentu", "Tidak ada jawaban benar"], a: "a"},
+        {q: "Berikut ini adalah tombol yang terdapat pada jendela excel pada kondisi tampilan print preview, kecuali", o: ["Print", "Back", "Zoom", "Close"], a: "b"},
+        {q: "Perintah print dapat juga dijalankan dari tombol keyboard dengan cara menekan tombol", o: ["Ctrl V", "Ctrl C", "Ctrl Shift P", "Ctrl P"], a: "d"},
+        {q: "Formula auditing mode dijalankan dari menu", o: ["View", "Insert", "Tools", "Format"], a: "d"},
+        {q: "Menghitung rata-rata data angka menggunakan fungsi :", o: ["Average", "Min", "Max", "Sum"], a: "a"},
+        {q: "Perintah function terdapat di menu", o: ["Insert", "Formulas", "Tools", "Data"], a: "b"},
+        {q: "Baris judul dalam ms-excel disebut juga dengan….", o: ["Title bar", "Menubar", "Toolbar", "Semua jawaban salah"], a: "a"},
+        {q: "Lembar kerja dalam excel disebut juga dengan….", o: ["Range", "Cell", "Worksheet", "Area slide"], a: "c"},
+        {q: "Daerah tempat penulisan rumus excel disebut…", o: ["Menubar", "Titlebar", "Formulabar", "Toolbar"], a: "c"},
+        {q: "Jumlah lembar kerja dalam buku kerja Microsoft excel (lama) terdiri atas…", o: ["256 kolom dan 65356 baris", "256 kolom dan 65536 baris", "256 kolom dan 63536 baris", "Semua benar"], a: "d"},
+        {q: "Dibawah ini yang bukan termasuk fungsi statistic adalah…", o: ["=sum()", "=count()", "=min()", "=if()"], a: "d"},
+        {q: "Extensi yang di hasilkan oleh file spreadsheet adalah…", o: ["Doc", "Exe", "Ppt", "Xls"], a: "d"},
+        {q: "Untuk mengedit isi data sel sesuai dengan kebutuhan, langkah yang benar adalah…", o: ["Tekan F2 – edit cell", "Tekan F2 – pilih cell", "Tekan F2 – ok", "Pilih cell yang akan diubah – tekan F2"], a: "d"},
+        {q: "Microsoft Excel merupakan program aplikasi", o: ["Spreadsheet", "Wordprosesor", "Presentation", "Animasi"], a: "a"},
+        {q: "Fungsi yang digunakan untuk menghitung penjumlahan data angka", o: ["Sum", "Max", "Min", "Average"], a: "a"},
+        {q: "Fungsi yang digunakan untuk menghitung nilai terbesar data angka", o: ["Sum", "Max", "Min", "Average"], a: "b"},
+        {q: "Fungsi yang digunakan untuk menghitung nilai terkecil data angka", o: ["Sum", "Max", "Min", "Average"], a: "c"},
+        {q: "Program aplikasi yang digunakan untuk pengolahan angka, tabel dan grafik disebut….", o: ["Windows", "Ms-word", "Ms-excel", "Ms-office"], a: "c"},
+        {q: "Cara yang tepat unutk mengaktifkan ms- excel adalah…", o: ["Start – program – ms word", "Ms excel – start", "Program – ms excel", "Star – program – ms office – ms excel"], a: "d"},
+        {q: "Cara menutup ms-excel adalah…", o: ["File – open", "File – new", "File – close", "Edit-close"], a: "c"},
+        {q: "Dibawah ini yang termasuk lembar kerja ms-excel adalah , kecuali…", o: ["Menubar", "Toolbar", "Titlebar", "Excelbar"], a: "d"},
+        {q: "Dibawah ini fungsi ms-excel adalah, kecuali..", o: ["Menghitung data", "Membuat grafik", "Membuat tabel", "Membuat makalah"], a: "d"},
+        {q: "Fungsi yang digunakan untuk mengambil bagian kanan dari data teks sebanyak karakter tertentu", o: ["Left", "Right", "Mid", "Value"], a: "b"},
+        {q: "Fungsi yang digunakan untuk mengambil beberapa karakter di tengah-tengah data teks", o: ["Left", "Right", "Mid", "Value"], a: "c"},
+        {q: "Fungsi yang digunakan untuk mengubah data teks menjadi data numeric", o: ["Left", "Right", "Mid", "Value"], a: "d"},
+        {q: "Yang bukan termasuk fungsi string di bawah ini adalah :", o: ["Text", "Lower", "Upper", "If"], a: "a"},
+        {q: "Yang disebut fungsi logika di bawah ini adalah", o: ["If", "Sumif", "Logif", "Countif"], a: "a"},
+        {q: "Fungsi Vlookup dan Hlookup digunakan untuk membaca suatu :", o: ["Tabel", "Data", "Grafik", "Rumus"], a: "a"},
+        {q: "Perintah untuk menyimpan lembar kerja excel dengan menekan tombol", o: ["Ctrl S", "Ctrl N", "Ctrl V", "Ctrl A"], a: "a"},
+        {q: "Untuk mengatur tinggi baris table menggunakan perintah", o: ["Format, wide, height", "Format, row, height", "Format, coloum, autoselection", "Format, row, autoselection"], a: "b"},
+        {q: "Untuk mengatur kolom table menggunakan perintah", o: ["Format, column, width", "Format, row, heigh", "Format, coloum, autoselection", "Format, row, autoselection"], a: "a"},
+        {q: "Berikut ini yang bukan termasuk kelompok program Microsoft office adalah", o: ["Microsoft excel", "Microsoft word", "Microsoft power point", "Microsoft windows"], a: "d"},
+        // Soal Tambahan dari bagian Contoh Soal
+        {q: "Suatu daerah worksheet dengan istilah tempat kumpulan beberapa Cell disebut?", o: ["Sheet", "Column", "Range", "Pointer", "Gridline"], a: "c"},
+        {q: "Tombol manajemen berkas dokumen pada Microsof Excel disebut?", o: ["Excel Options", "Office Button", "Ribbon", "Title Bar", "Toolbar"], a: "b"},
+        {q: "Salah satu cara menyimpan workbook pada excel adalah dengan tombol keyboard", o: ["Ctrl+B", "Ctrl+P", "Ctrl+C", "Ctrl+V", "Ctrl+S"], a: "e"},
+        {q: "Berikut ini yang merupakan alamat cell yang manakah :", o: ["84", "3F", "B5", "BB", "F0"], a: "c"},
+        {q: "Ikon “save”, “redo”, dan “undo” merupakan bagian menu di microsoft excel adalah ….", o: ["Ribbon", "Office Button", "Status Bar", "Quick Access Toolbar", "Titlebar"], a: "d"},
+        {q: "Untuk mengubah satuan ukuran di Excel, maka menggunakan perintah …", o: ["Start–Setting", "Tools–Options", "Office Button–Open", "Office Button–Excel Options–Save", "Office Button–Excel Options–Advanced–Display–Ruler Units"], a: "e"},
+        {q: "Ikon “Undo” memiliki fungsi untuk ...", o: ["Mencetak", "Menyimpan", "Membuka", "Memotong", "Membatalkan pengerjaan"], a: "e"},
+        {q: "Ctrl+P adalah shortcut key berfungsi untuk menampilkan ...", o: ["Page setup", "Customize", "Heater", "Format cells", "Print"], a: "e"},
+        {q: "Fungsi dalam Excel yang digunakan menghitung rata-rata dari sekelompok nilai:", o: ["SUM", "AVERAGE", "MAX", "MIN", "IF"], a: "b"},
+        {q: "Cara memindahkan atau menyalin worksheet, menu yang harus dipilih pada tab sheet adalah ….", o: ["Delete", "Rename", "Select all sheet", "Move or copy", "Paste"], a: "b"}, // Jawaban sesuai teks file anda (B), meski teknisnya Move or copy (D)
+        {q: "Untuk memberi bingkai pada cell, menu yang harus dipilih pada kotak Format Cells adalah ….", o: ["Number", "Alignment", "Borders", "Font", "Fill"], a: "c"},
+        {q: "Menu untuk mengatur ukuran kolom dengan mempersempit dan lebar adalah ….", o: ["Insert Sheet Column", "Insert Sheet", "Borders", "Row Height", "Column Width"], a: "e"},
+        {q: "Untuk menambah garis dalam Excel, perintah pada menu Insert adalah ….", o: ["Insert Cells", "Insert Sheet Rows", "Insert Sheet Column", "Insert Sheet", "Insert Name"], a: "b"},
+        {q: "Format teks agar menjadi miring menggunakan tombol ….", o: ["Ctrl+B", "Ctrl+I", "Ctrl+U", "Ctrl+S", "Ctrl+O"], a: "b"},
+        {q: "Pengertian range adalah ….", o: ["Worksheet", "Workbook", "Sel sembarang", "Sel persegi panjang", "Pertemuan garis dan kolom"], a: "e"}, // Jawaban sesuai teks file anda (E)
+        {q: "Fungsi utama program Microsoft Excel adalah …", o: ["Pengolah kata", "Pengolah data angka", "Mengelola dokumen", "Berkomunikasi", "Mencari informasi"], a: "b"},
+        {q: "Microsoft Excel menggunakan system wysiwyg, apa arti kata tersebut …", o: ["Apa didapat dilihat", "Apa dilihat sama dengan didapat", "Apa diminati didapati", "Perhitungan", "Selesai masalah"], a: "b"},
+        {q: "Pengertian Worksheet adalah ?", o: ["Kumpulan worksheet", "Kumpulan sel", "Baris kolom", "Sel range", "Lembar kerja dalam excel"], a: "e"},
+        {q: "Apa yang dimaksud dengan sel (Cell) dalam excel ?", o: ["Kumpulan worksheet", "Kumpulan sel", "Pertemuan baris kolom", "Pertemuan sel range", "Lembar kerja"], a: "c"},
+        {q: "Apa yang dimaksud dengan Range dalam excel ?", o: ["Kumpulan worksheet", "Kumpulan beberapa sel", "Pertemuan baris kolom", "Pertemuan sel range", "Lembar kerja"], a: "b"}
+    ];
+
+    function startQuiz() {
+        const input = document.getElementById('userNameInput').value.trim();
+        if(input === "") { alert("Mohon masukkan nama Anda!"); return; }
+        pesertaName = input;
+        document.getElementById('login-overlay').style.display = 'none';
+        document.getElementById('displayUserName').textContent = "PESERTA: " + pesertaName.toUpperCase();
+    }
+
+    function shuffle(a) { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+    const questions = shuffle([...rawQuestions]);
+    let currentIdx = 0;
+    const cont = document.getElementById('soalContainer');
+    const grid = document.getElementById('gridNav');
+
+    questions.forEach((s, i) => {
+        const div = document.createElement('div');
+        div.className = `q-wrapper ${i === 0 ? 'active' : ''}`;
+        div.id = `q${i}`;
+        let optHtml = '';
+        s.o.forEach((opt, idx) => {
+            const code = String.fromCharCode(97 + idx);
+            optHtml += `<label><input type="radio" name="ans${i}" value="${code}" onclick="handleAutoNext(${i})">${code.toUpperCase()}. ${opt}</label>`;
+        });
+        div.innerHTML = `<div class="q-text">${i + 1}. ${s.q}</div><div class="options">${optHtml}</div>`;
+        cont.appendChild(div);
+        const btn = document.createElement('button');
+        btn.id = `nav${i}`; btn.textContent = i + 1;
+        btn.onclick = () => jump(i);
+        grid.appendChild(btn);
+    });
+
+    function jump(idx) {
+        document.querySelector('.q-wrapper.active').classList.remove('active');
+        document.getElementById(`q${idx}`).classList.add('active');
+        currentIdx = idx; updateUI(); window.scrollTo(0,0);
+    }
+    function move(step) { let t = currentIdx + step; if(t >= 0 && t < questions.length) jump(t); }
+    function handleAutoNext(idx) { document.getElementById(`nav${idx}`).classList.add('done'); if(idx < questions.length - 1) setTimeout(() => move(1), 400); }
+    function updateUI() {
+        document.querySelectorAll('.nav-grid button').forEach(b => b.classList.remove('current'));
+        document.getElementById(`nav${currentIdx}`).classList.add('current');
+        document.getElementById('prevBtn').disabled = currentIdx === 0;
+        const nBtn = document.getElementById('nextBtn');
+        if(currentIdx === questions.length - 1) { nBtn.textContent = 'SELESAI'; nBtn.onclick = finish; }
+        else { nBtn.textContent = 'LANJUT'; nBtn.onclick = () => move(1); }
+    }
+
+    function finish() {
+        let benar = 0; const rekap = document.getElementById('rekapBody'); rekap.innerHTML = '';
+        questions.forEach((s, i) => {
+            const sel = document.querySelector(`input[name="ans${i}"]:checked`);
+            const uAnsVal = sel ? sel.value : null;
+            const uAnsText = sel ? s.o[uAnsVal.charCodeAt(0) - 97] : "Tidak Dijawab";
+            const cAnsText = s.o[s.a.charCodeAt(0) - 97];
+            const isC = uAnsVal === s.a; if(isC) benar++;
+            rekap.innerHTML += `<tr><td style="text-align:center">${i+1}</td><td><strong>${s.q}</strong><br><span style="color: ${isC ? 'green' : 'red'}">Jawaban Anda: ${uAnsText}</span><br><span style="color: black">Kunci Jawaban: ${cAnsText}</span></td><td style="text-align:center" class="${isC?'status-benar':'status-salah'}">${isC?'BENAR':'SALAH'}</td></tr>`;
+        });
+        // Penyesuaian skor: (benar / total soal) * 100
+        document.getElementById('scoreText').textContent = ((benar / questions.length) * 100).toFixed(1);
+        document.getElementById('soalContainer').style.display = 'none';
+        document.getElementById('navFooter').style.display = 'none';
+        document.getElementById('result-area').style.display = 'block';
+        window.scrollTo(0,0);
+    }
+
+    async function downloadPDF() {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+        doc.setFontSize(16);
+        doc.text("HASIL SIMULASI CAT MS EXCEL", 105, 15, { align: "center" });
+        doc.setFontSize(12);
+        doc.text("Nama Peserta: " + pesertaName.toUpperCase(), 105, 23, { align: "center" });
+        doc.text("Skor Akhir: " + document.getElementById('scoreText').textContent, 105, 29, { align: "center" });
+        doc.setFontSize(10);
+        doc.text("Persona Research & Consulting | WA: 0877 425 5786", 105, 36, { align: "center" });
+        
+        const rows = [];
+        questions.forEach((s, i) => {
+            const sel = document.querySelector(`input[name="ans${i}"]:checked`);
+            const uAnsVal = sel ? sel.value : null;
+            const uAnsText = sel ? s.o[uAnsVal.charCodeAt(0) - 97] : "-";
+            const cAnsText = s.o[s.a.charCodeAt(0) - 97];
+            rows.push([i+1, s.q + "\nJawaban Anda: " + uAnsText + "\nKunci: " + cAnsText, uAnsVal === s.a ? "BENAR" : "SALAH"]);
+        });
+
+        doc.autoTable({
+            head: [['No', 'Pertanyaan & Jawaban', 'Status']],
+            body: rows,
+            startY: 45,
+            theme: 'grid',
+            headStyles: { fillColor: [0, 0, 0] },
+            columnStyles: { 0: { cellWidth: 10 }, 2: { cellWidth: 20 } }
+        });
+        doc.save("Pembahasan_CAT_Excel_" + pesertaName.replace(/\s+/g, '_') + ".pdf");
+    }
+    updateUI();
+</script>
+</body>
+</html>

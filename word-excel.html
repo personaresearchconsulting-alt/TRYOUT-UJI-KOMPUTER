@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SIMULASI TKK POLRI (MIX 100) - Persona Research & Consulting</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+    <style>
+        :root { --gold: #D4AF37; --ivory: #FFFFF0; --black: #000000; }
+        * { box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Arial, sans-serif; background: var(--ivory); color: var(--black); margin: 0; padding: 10px; line-height: 1.4; display: flex; flex-direction: column; min-height: 100vh; user-select: none; -webkit-user-select: none; }
+        
+        .container { max-width: 900px; background: white; margin: auto; padding: 15px; border-radius: 10px; border-top: 8px solid var(--black); box-shadow: 0 4px 15px rgba(0,0,0,0.1); flex: 1; display: flex; flex-direction: column; }
+        
+        .header { text-align: center; border-bottom: 2px solid var(--gold); margin-bottom: 15px; padding-bottom: 10px; }
+        .header h2 { margin: 0; font-size: 1.3em; font-weight: 900; text-transform: uppercase; color: var(--black); }
+        
+        #login-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--black); display: flex; align-items: center; justify-content: center; z-index: 9999; }
+        .login-box { background: white; padding: 30px; border-radius: 12px; text-align: center; border-top: 5px solid var(--gold); width: 90%; max-width: 450px; }
+        .login-box input { width: 100%; padding: 12px; margin: 15px 0; border: 2px solid #ddd; border-radius: 6px; font-size: 1em; text-align: center; }
+
+        .q-wrapper { display: none; width: 100%; }
+        .q-wrapper.active { display: block; animation: fadeIn 0.3s; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        
+        .q-text { color: var(--black); font-weight: bold; font-size: 1.15em; margin-bottom: 20px; border-left: 5px solid var(--gold); padding-left: 15px; min-height: 60px; }
+        .options { display: grid; gap: 10px; }
+        .options label { display: flex; align-items: center; padding: 14px; background: #f9f9f9; border: 1px solid #ddd; border-radius: 8px; cursor: pointer; font-size: 1em; transition: 0.2s; }
+        .options label:hover { background: #fff9e6; border-color: var(--gold); }
+        .options input { margin-right: 15px; transform: scale(1.4); accent-color: var(--black); }
+
+        .nav-footer { margin-top: 30px; padding-top: 15px; border-top: 1px solid #eee; }
+        .nav-grid { display: grid; grid-template-columns: repeat(10, 1fr); gap: 4px; margin-bottom: 15px; }
+        .nav-grid button { padding: 8px 0; font-size: 0.7em; border: 1px solid #ccc; background: white; cursor: pointer; border-radius: 4px; }
+        .nav-grid button.done { background: var(--black); color: white; border-color: var(--black); }
+        .nav-grid button.current { border: 2px solid var(--gold); font-weight: bold; background: #fff9e6; }
+
+        .btn-action { background: var(--black); color: white; border: none; padding: 12px 25px; font-weight: bold; cursor: pointer; border-radius: 6px; transition: 0.3s; margin: 5px; }
+        .btn-action:hover { background: var(--gold); }
+        .btn-download { background: #28a745; }
+
+        #result-area { display: none; text-align: center; padding: 20px 0; }
+        .score-val { font-size: 5em; font-weight: bold; color: var(--black); margin: 10px 0; }
+        
+        .rekap-table { width: 100%; border-collapse: collapse; margin-top: 25px; font-size: 0.85em; text-align: left; }
+        .rekap-table th, .rekap-table td { border: 1px solid #ddd; padding: 12px; }
+        .rekap-table th { background: #333; color: white; text-align: center; }
+        .status-benar { color: #28a745; font-weight: bold; }
+        .status-salah { color: #dc3545; font-weight: bold; }
+
+        .page-footer { text-align: center; padding: 15px; font-size: 0.9em; color: #555; font-weight: bold; }
+        @media (max-width: 600px) { .nav-grid { grid-template-columns: repeat(5, 1fr); } }
+    </style>
+</head>
+<body oncontextmenu="return false" oncopy="return false" oncut="return false" onkeydown="return (event.keyCode != 123)">
+
+<div id="login-overlay">
+    <div class="login-box">
+        <h2 style="margin-top:0;">SIMULASI TKK POLRI</h2>
+        <p style="color: #666;">Paket Gabungan: 100 Soal Mix (Word & Excel)</p>
+        <input type="text" id="userNameInput" placeholder="Masukkan Nama Lengkap Anda..." autocomplete="off">
+        <button class="btn-action" style="width:100%" onclick="startQuiz()">MULAI UJIAN SEKARANG</button>
+    </div>
+</div>
+
+<div class="container">
+    <div class="header">
+        <h2>PERSONA RESEARCH & CONSULTING</h2>
+        <div style="font-weight: bold; color: var(--gold);">ASPEK PENGETAHUAN KOMPUTER (TKK)</div>
+    </div>
+
+    <form id="quizForm">
+        <div id="soalContainer"></div>
+        
+        <div id="result-area">
+            <h3 id="displayUserName" style="color:var(--gold); margin-bottom:5px;"></h3>
+            <h2 style="margin:0;">HASIL AKHIR SIMULASI</h2>
+            <div class="score-val" id="scoreText">0</div>
+            <p id="gradeMsg" style="font-weight: bold; font-size: 1.2em;"></p>
+            
+            <button type="button" class="btn-action btn-download" onclick="downloadPDF()">DOWNLOAD SERTIFIKAT HASIL (PDF)</button>
+            <button type="button" class="btn-action" onclick="location.reload()">ULANGI DARI AWAL</button>
+
+            <div style="overflow-x: auto;">
+                <table class="rekap-table" id="tableRekap">
+                    <thead>
+                        <tr>
+                            <th>No</th>
+                            <th>Pertanyaan & Analisis Jawaban</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="rekapBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </form>
+
+    <div class="nav-footer" id="navFooter">
+        <div style="display: flex; justify-content: space-between; margin-bottom: 20px;">
+            <button class="btn-action" id="prevBtn" onclick="move(-1)" disabled>KEMBALI</button>
+            <span id="pageInfo" style="font-weight: bold; align-self: center;">Soal 1 / 100</span>
+            <button class="btn-action" id="nextBtn" onclick="move(1)">LANJUT</button>
+        </div>
+        <div class="nav-grid" id="gridNav"></div>
+    </div>
+</div>
+
+<footer class="page-footer">
+    Persona Research & Consulting | Sistem Penilaian Real-Time | WA: 0877 4251 5786
+</footer>
+
+<script>
+    let pesertaName = "";
+    // DATA 100 SOAL (25 WORD A, 25 WORD B, 25 EXCEL A, 25 EXCEL B)
+    let questions = [
+        // WORD DASAR
+        {q: "Shortcut untuk membuat dokumen baru pada Microsoft Word adalah...", o: ["Ctrl + N", "Ctrl + O", "Ctrl + S", "Ctrl + P", "Ctrl + W"], a: "Ctrl + N"},
+        {q: "Extension standar untuk file Word versi 2007 ke atas adalah...", o: [".doc", ".docx", ".xls", ".txt", ".rtf"], a: ".docx"},
+        {q: "Untuk mengatur batas pinggir kertas, menu yang digunakan adalah...", o: ["Orientation", "Size", "Margins", "Columns", "Spacing"], a: "Margins"},
+        {q: "Fitur untuk membuat huruf pertama paragraf menjadi besar adalah...", o: ["WordArt", "Drop Cap", "Header", "Footer", "Symbol"], a: "Drop Cap"},
+        {q: "Shortcut untuk mencetak tebal teks adalah...", o: ["Ctrl + I", "Ctrl + U", "Ctrl + B", "Ctrl + Z", "Ctrl + K"], a: "Ctrl + B"},
+        {q: "Perintah 'Justify' digunakan untuk membuat teks rata...", o: ["Kiri", "Kanan", "Tengah", "Kiri dan Kanan", "Atas"], a: "Kiri dan Kanan"},
+        {q: "Ikon 'Undo' berfungsi untuk...", o: ["Menghapus teks", "Membatalkan perintah terakhir", "Menyimpan file", "Menyalin teks", "Mencetak"], a: "Membatalkan perintah terakhir"},
+        {q: "Menu untuk menyisipkan tabel adalah...", o: ["Home", "Insert", "Design", "Layout", "References"], a: "Insert"},
+        {q: "Shortcut untuk menyimpan dokumen adalah...", o: ["Ctrl + C", "Ctrl + S", "Ctrl + V", "Ctrl + X", "Ctrl + P"], a: "Ctrl + S"},
+        {q: "Page Orientation 'Landscape' berarti posisi kertas...", o: ["Tegak", "Mendatar", "Miring", "Terbalik", "Kecil"], a: "Mendatar"},
+        {q: "Fungsi dari fitur 'Footer' adalah...", o: ["Judul atas", "Catatan kaki halaman", "Warna kertas", "Garis tepi", "Jenis font"], a: "Catatan kaki halaman"},
+        {q: "Shortcut Ctrl + J pada Word digunakan untuk...", o: ["Rata kiri", "Rata tengah", "Rata kanan", "Rata kiri-kanan", "Cetak miring"], a: "Rata kiri-kanan"},
+        {q: "Untuk menyisipkan gambar dari internet, kita pilih...", o: ["Pictures", "Online Pictures", "Shapes", "Icons", "SmartArt"], a: "Online Pictures"},
+        {q: "Shortcut untuk 'Select All' (pilih semua) adalah...", o: ["Ctrl + A", "Ctrl + S", "Ctrl + D", "Ctrl + F", "Ctrl + G"], a: "Ctrl + A"},
+        {q: "Untuk membuat daftar menggunakan simbol/titik, kita menggunakan...", o: ["Numbering", "Bullets", "Multilevel List", "Sort", "Indent"], a: "Bullets"},
+        {q: "Shortcut Ctrl + I digunakan untuk...", o: ["Menebalkan", "Menggarisbawahi", "Memiringkan", "Mencetak", "Menutup"], a: "Memiringkan"},
+        {q: "Menu 'Line Spacing' berfungsi untuk...", o: ["Mengatur font", "Mengatur jarak antar baris", "Mengatur margin", "Menambah halaman", "Membuat tabel"], a: "Mengatur jarak antar baris"},
+        {q: "F12 pada Word berfungsi untuk...", o: ["Save", "Save As", "Print", "Open", "New"], a: "Save As"},
+        {q: "Ikon 'Format Painter' berbentuk...", o: ["Pensil", "Gunting", "Kuas", "Ember cat", "Kertas"], a: "Kuas"},
+        {q: "Untuk menyisipkan bentuk seperti lingkaran atau kotak menggunakan...", o: ["ClipArt", "Shapes", "SmartArt", "Chart", "Icons"], a: "Shapes"},
+        {q: "Shortcut Ctrl + P digunakan untuk...", o: ["Paste", "Print", "Paragraph", "Page Setup", "Protect"], a: "Print"},
+        {q: "Langkah untuk membuat pangkat atas (Superscript) adalah...", o: ["Ctrl + =", "Ctrl + Shift + +", "Ctrl + B", "Ctrl + D", "Ctrl + U"], a: "Ctrl + Shift + +"},
+        {q: "Menu 'Find and Replace' digunakan untuk...", o: ["Menghapus file", "Mencari dan mengganti kata", "Menyimpan file", "Mencetak file", "Membuat tabel"], a: "Mencari dan mengganti kata"},
+        {q: "Untuk membuat kolom seperti di koran, gunakan fitur...", o: ["Rows", "Columns", "Breaks", "Line Numbers", "Hyphenation"], a: "Columns"},
+        {q: "Shortcut Ctrl + Z adalah...", o: ["Redo", "Undo", "Cut", "Copy", "Paste"], a: "Undo"},
+
+        // WORD LANJUT
+        {q: "Fitur untuk membuat surat massal secara otomatis adalah...", o: ["Mail Merge", "Hyperlink", "Cross-reference", "Footnote", "Equation"], a: "Mail Merge"},
+        {q: "Untuk membuat Daftar Isi otomatis, kita harus menggunakan...", o: ["Table of Contents", "Index", "Citations", "Captions", "Footnotes"], a: "Table of Contents"},
+        {q: "Shortcut Ctrl + K digunakan untuk...", o: ["Memotong teks", "Menyisipkan Hyperlink", "Mencetak miring", "Rata kanan", "Menghapus format"], a: "Menyisipkan Hyperlink"},
+        {q: "Fitur 'Track Changes' terdapat pada menu...", o: ["Home", "Insert", "Review", "View", "Design"], a: "Review"},
+        {q: "Untuk menyisipkan catatan kaki di bagian bawah halaman, gunakan...", o: ["Header", "Endnote", "Footnote", "Caption", "Bookmark"], a: "Footnote"},
+        {q: "Shortcut Ctrl + F digunakan untuk...", o: ["Mencetak", "Membuka Navigation Pane (Find)", "Format font", "Simpan", "Keluar"], a: "Membuka Navigation Pane (Find)"},
+        {q: "Untuk membagi dokumen menjadi beberapa bagian independen, gunakan...", o: ["Page Break", "Section Break", "Line Break", "Text Wrap", "Column Break"], a: "Section Break"},
+        {q: "Fitur 'Thesaurus' digunakan untuk...", o: ["Mengecek ejaan", "Mencari sinonim kata", "Menghitung kata", "Menerjemahkan", "Membuat simbol"], a: "Mencari sinonim kata"},
+        {q: "Shortcut Shift + F3 berfungsi untuk...", o: ["Menyimpan", "Mengubah besar kecil huruf (Change Case)", "Mencetak", "Mencari kata", "Bantuan"], a: "Mengubah besar kecil huruf (Change Case)"},
+        {q: "Fitur untuk memberi teks bayangan 'Confidential' di latar belakang adalah...", o: ["Border", "Watermark", "Page Color", "Shading", "Theme"], a: "Watermark"},
+        {q: "Shortcut Ctrl + Enter digunakan untuk...", o: ["Membuat baris baru", "Membuat halaman baru (Page Break)", "Menyimpan", "Keluar", "Mencetak"], a: "Membuat halaman baru (Page Break)"},
+        {q: "Untuk menampilkan penggaris (Ruler), kita masuk ke menu...", o: ["Home", "Insert", "Layout", "View", "Review"], a: "View"},
+        {q: "Shortcut Ctrl + Shift + C pada Word adalah...", o: ["Copy teks", "Copy Format", "Center teks", "Clear teks", "Create file"], a: "Copy Format"},
+        {q: "Fitur 'Compare' digunakan untuk...", o: ["Menghitung kata", "Membandingkan dua dokumen", "Mengecek ejaan", "Menerjemahkan", "Mengunci file"], a: "Membandingkan dua dokumen"},
+        {q: "Untuk membuat diagram alur/proses secara visual, gunakan...", o: ["Chart", "SmartArt", "Shapes", "ClipArt", "Object"], a: "SmartArt"},
+        {q: "Shortcut Ctrl + D pada Word membuka...", o: ["Paragraph dialog", "Font dialog", "Print dialog", "Find dialog", "Insert dialog"], a: "Font dialog"},
+        {q: "Fitur 'Spelling & Grammar' berada di menu...", o: ["Home", "Insert", "Review", "View", "Layout"], a: "Review"},
+        {q: "Shortcut Ctrl + Y adalah...", o: ["Undo", "Redo", "Cut", "Copy", "Paste"], a: "Redo"},
+        {q: "Untuk mengatur jarak spasi antar karakter, gunakan menu...", o: ["Paragraph", "Font - Advanced - Spacing", "Layout", "Review", "Design"], a: "Font - Advanced - Spacing"},
+        {q: "Shortcut Ctrl + L digunakan untuk...", o: ["Rata kiri", "Rata kanan", "Rata tengah", "Rata kiri-kanan", "Cetak tebal"], a: "Rata kiri"},
+        {q: "Guna 'Screenshot' pada tab Insert adalah...", o: ["Mengambil foto kamera", "Menangkap tampilan jendela yang aktif", "Mencetak layar", "Menyimpan gambar", "Mengedit foto"], a: "Menangkap tampilan jendela yang aktif"},
+        {q: "Shortcut Ctrl + Shift + > berfungsi untuk...", o: ["Mengecilkan font", "Memperbesar font", "Menebalkan", "Miringkan", "Simpan"], a: "Memperbesar font"},
+        {q: "Untuk menyisipkan rumus matematika, gunakan menu...", o: ["Symbol", "Equation", "WordArt", "Chart", "Object"], a: "Equation"},
+        {q: "Shortcut Ctrl + W digunakan untuk...", o: ["Menutup Word", "Menutup dokumen yang aktif saja", "Mencetak", "Simpan", "Buka"], a: "Menutup dokumen yang aktif saja"},
+        {q: "Ikon 'Shading' (ember cat) digunakan untuk...", o: ["Warna huruf", "Warna latar belakang paragraf/sel", "Warna garis", "Warna kertas", "Efek teks"], a: "Warna latar belakang paragraf/sel"},
+
+        // EXCEL DASAR
+        {q: "Pertemuan antara kolom (Column) dan baris (Row) disebut...", o: ["Range", "Cell", "Sheet", "Workbook", "Grid"], a: "Cell"},
+        {q: "Rumus dalam Excel harus selalu diawali dengan tanda...", o: ["+", "-", "*", "=", "@"], a: "="},
+        {q: "Fungsi untuk menjumlahkan data dalam sebuah range adalah...", o: ["AVERAGE", "COUNT", "SUM", "MAX", "MIN"], a: "SUM"},
+        {q: "Extension file standar untuk Excel versi 2007 ke atas adalah...", o: [".xls", ".xlsx", ".xlsm", ".csv", ".txt"], a: ".xlsx"},
+        {q: "Shortcut untuk menyimpan (Save) dokumen Excel adalah...", o: ["Ctrl + C", "Ctrl + S", "Ctrl + P", "Ctrl + O", "Ctrl + N"], a: "Ctrl + S"},
+        {q: "Fungsi untuk mencari nilai rata-rata adalah...", o: ["SUM", "AVERAGE", "MAX", "MIN", "COUNT"], a: "AVERAGE"},
+        {q: "Ikon 'Merge & Center' berfungsi untuk...", o: ["Menghapus sel", "Menggabungkan sel dan rata tengah", "Menambah kolom", "Menghapus baris", "Menyalin sel"], a: "Menggabungkan sel dan rata tengah"},
+        {q: "Kumpulan dari beberapa sel disebut...", o: ["Sheet", "Range", "Cell", "Workbook", "Column"], a: "Range"},
+        {q: "Simbol perkalian dalam rumus Excel adalah...", o: ["X", "*", "+", "^", "/"], a: "*"},
+        {q: "Shortcut Ctrl + N pada Excel berfungsi untuk...", o: ["Membuka file", "Membuat Workbook baru", "Menutup file", "Mencetak", "Menghapus"], a: "Membuat Workbook baru"},
+        {q: "Fungsi untuk mencari nilai tertinggi adalah...", o: ["MIN", "MAX", "SUM", "COUNT", "AVERAGE"], a: "MAX"},
+        {q: "Guna fitur 'Wrap Text' adalah...", o: ["Menggabungkan sel", "Melipat teks agar muat dalam satu sel", "Mewarnai sel", "Menghapus teks", "Mencetak teks"], a: "Melipat teks agar muat dalam satu sel"},
+        {q: "Simbol pembagian dalam Excel adalah...", o: ["*", ":", "/", "div", "%"], a: "/"},
+        {q: "Fungsi untuk menghitung jumlah data (banyaknya data) adalah...", o: ["SUM", "COUNT", "AVERAGE", "MAX", "MIN"], a: "COUNT"},
+        {q: "Shortcut Ctrl + P digunakan untuk...", o: ["Print", "Paste", "Paragraph", "Page Setup", "Protect"], a: "Print"},
+        {q: "Ikon '$' (Accounting Number Format) digunakan untuk...", o: ["Menghitung", "Memberi format mata uang", "Menghapus angka", "Menyisipkan sel", "Menyimpan"], a: "Memberi format mata uang"},
+        {q: "Untuk menambah sheet baru, kita menekan tanda plus (+) di samping...", o: ["Title bar", "Menu bar", "Sheet Tab", "Formula bar", "Scroll bar"], a: "Sheet Tab"},
+        {q: "Fungsi untuk mencari nilai terendah adalah...", o: ["MIN", "MAX", "SUM", "COUNT", "AVERAGE"], a: "MIN"},
+        {q: "Shortcut Ctrl + ; (titik koma) berfungsi untuk...", o: ["Menyisipkan waktu", "Menyisipkan tanggal saat ini", "Menyisipkan angka", "Menghapus sel", "Simpan"], a: "Menyisipkan tanggal saat ini"},
+        {q: "Untuk mengatur lebar kolom secara otomatis sesuai isi, kita melakukan...", o: ["Merge", "Double klik batas kolom", "Klik kanan - Delete", "Format Painter", "Wrap Text"], a: "Double klik batas kolom"},
+        {q: "Shortcut Ctrl + Z adalah...", o: ["Undo", "Redo", "Cut", "Copy", "Paste"], a: "Undo"},
+        {q: "Guna 'Format Painter' pada Excel adalah...", o: ["Menyalin teks", "Menyalin format sel", "Mewarnai gambar", "Menghapus sel", "Membuat tabel"], a: "Menyalin format sel"},
+        {q: "Shortcut Ctrl + 1 (angka satu) pada Excel membuka...", o: ["Format Cells", "Format Font", "Print", "New", "Save"], a: "Format Cells"},
+        {q: "Baris (Row) dalam Excel ditandai dengan...", o: ["Huruf (A,B,C)", "Angka (1,2,3)", "Simbol", "Warna", "Kata"], a: "Angka (1,2,3)"},
+        {q: "Kolom (Column) dalam Excel ditandai dengan...", o: ["Huruf (A,B,C)", "Angka (1,2,3)", "Simbol", "Warna", "Kata"], a: "Huruf (A,B,C)"},
+
+        // EXCEL LANJUT
+        {q: "Fungsi logika untuk mengevaluasi kondisi tertentu adalah...", o: ["SUM", "IF", "VLOOKUP", "HLOOKUP", "MAX"], a: "IF"},
+        {q: "Fungsi untuk mencari data secara vertikal dari tabel referensi adalah...", o: ["LOOKUP", "IF", "VLOOKUP", "HLOOKUP", "INDEX"], a: "VLOOKUP"},
+        {q: "Tanda '$' dalam rumus (misal $A$1) digunakan untuk membuat sel menjadi...", o: ["Relatif", "Mata uang", "Absolut (Terkunci)", "Tersembunyi", "Error"], a: "Absolut (Terkunci)"},
+        {q: "Fungsi untuk mencari data secara horizontal adalah...", o: ["VLOOKUP", "HLOOKUP", "LOOKUP", "MATCH", "IF"], a: "HLOOKUP"},
+        {q: "Untuk mengurutkan data dari A ke Z, kita menggunakan fitur...", o: ["Filter", "Sort Ascending", "Sort Descending", "Group", "Freeze"], a: "Sort Ascending"},
+        {q: "Shortcut untuk mengaktifkan fitur Filter adalah...", o: ["Ctrl + F", "Ctrl + Shift + L", "Ctrl + L", "Ctrl + T", "Alt + F"], a: "Ctrl + Shift + L"},
+        {q: "Fungsi untuk menggabungkan teks dari beberapa sel menjadi satu adalah...", o: ["MERGE", "JOIN", "CONCATENATE", "IF", "SUMIF"], a: "CONCATENATE"},
+        {q: "Guna fitur 'Freeze Panes' adalah...", o: ["Menghapus baris", "Mengunci baris/kolom agar tidak bergerak saat discroll", "Mewarnai sel", "Menyembunyikan sheet", "Mencetak sheet"], a: "Mengunci baris/kolom agar tidak bergerak saat discroll"},
+        {q: "Fungsi untuk menghitung rata-rata dengan kriteria tertentu adalah...", o: ["AVERAGE", "AVERAGEIF", "SUMIF", "COUNTIF", "IF"], a: "AVERAGEIF"},
+        {q: "Pesan error #VALUE! dalam Excel biasanya berarti...", o: ["Salah menulis rumus", "Salah tipe data (misal angka ditambah teks)", "Sel kosong", "Pembagian dengan nol", "Kolom kurang lebar"], a: "Salah tipe data (misal angka ditambah teks)"},
+        {q: "Pesan error #DIV/0! berarti...", o: ["Data hilang", "Pembagian dengan nol/sel kosong", "Rumus tidak ada", "Sel terkunci", "Format salah"], a: "Pembagian dengan nol/sel kosong"},
+        {q: "Fungsi untuk menjumlahkan data dengan kriteria tertentu adalah...", o: ["SUM", "SUMIF", "COUNTIF", "IF", "VLOOKUP"], a: "SUMIF"},
+        {q: "Shortcut Ctrl + Page Down berfungsi untuk...", o: ["Pindah ke sheet berikutnya", "Pindah ke sheet sebelumnya", "Pindah ke sel bawah", "Menghapus sheet", "Simpan"], a: "Pindah ke sheet berikutnya"},
+        {q: "Fungsi untuk mengambil beberapa karakter dari sebelah kiri teks adalah...", o: ["RIGHT", "MID", "LEFT", "LEN", "FIND"], a: "LEFT"},
+        {q: "Fungsi untuk mengambil karakter dari posisi tengah teks adalah...", o: ["LEFT", "RIGHT", "MID", "FIND", "LEN"], a: "MID"},
+        {q: "Fungsi untuk mengambil karakter dari sebelah kanan teks adalah...", o: ["LEFT", "MID", "RIGHT", "LEN", "FIND"], a: "RIGHT"},
+        {q: "Untuk membuat grafik, menu yang digunakan adalah...", o: ["Home", "Insert", "Data", "Review", "View"], a: "Insert"},
+        {q: "Fungsi 'LEN' dalam Excel digunakan untuk...", o: ["Mencari rata-rata", "Menghitung jumlah karakter teks", "Menghapus spasi", "Mengubah huruf", "Mencari angka"], a: "Menghitung jumlah karakter teks"},
+        {q: "Shortcut F4 saat menulis rumus berfungsi untuk...", o: ["Menghapus", "Menambah $ (Absolut)", "Mencetak", "Keluar", "Simpan"], a: "Menambah $ (Absolut)"},
+        {q: "Guna fitur 'Conditional Formatting' adalah...", o: ["Menghitung otomatis", "Memberi warna sel secara otomatis berdasarkan aturan", "Mengunci sel", "Menghapus duplikat", "Membuat tabel"], a: "Memberi warna sel secara otomatis berdasarkan aturan"},
+        {q: "Fungsi 'UPPER' digunakan untuk...", o: ["Huruf kecil semua", "Huruf besar semua", "Huruf depan besar", "Hapus spasi", "Gabung teks"], a: "Huruf besar semua"},
+        {q: "Fungsi 'LOWER' digunakan untuk...", o: ["Huruf besar semua", "Huruf kecil semua", "Huruf depan besar", "Hapus spasi", "Gabung teks"], a: "Huruf kecil semua"},
+        {q: "Fungsi 'PROPER' digunakan untuk...", o: ["Huruf besar semua", "Huruf kecil semua", "Huruf depan setiap kata menjadi besar", "Hapus spasi", "Gabung teks"], a: "Huruf depan setiap kata menjadi besar"},
+        {q: "Fitur untuk menghapus data yang ganda secara otomatis adalah...", o: ["Remove Duplicates", "Filter", "Sort", "Data Validation", "Consolidate"], a: "Remove Duplicates"},
+        {q: "Shortcut Ctrl + T pada Excel digunakan untuk...", o: ["Mencetak", "Membuat Table resmi (Format as Table)", "Simpan", "Buka", "Tutup"], a: "Membuat Table resmi (Format as Table)"}
+    ];
+
+    let currentIdx = 0;
+    const expiredDate = "2026-08-01"; // Expired Date sesuai protokol
+
+    function startQuiz() {
+        const today = new Date().toISOString().split('T')[0];
+        if (today > expiredDate) {
+            alert("Maaf, link simulasi ini sudah kadaluwarsa (1 Agustus 2026).");
+            return;
+        }
+        const name = document.getElementById('userNameInput').value.trim();
+        if (!name) { alert("Masukkan nama Anda!"); return; }
+        pesertaName = name;
+        document.getElementById('login-overlay').style.display = 'none';
+        
+        // MIX & SHUFFLE
+        questions = questions.sort(() => Math.random() - 0.5); // Acak Soal
+        questions.forEach(q => {
+            q.o = q.o.sort(() => Math.random() - 0.5); // Acak Pilihan
+        });
+        
+        initQuiz();
+    }
+
+    function initQuiz() {
+        const container = document.getElementById('soalContainer');
+        const grid = document.getElementById('gridNav');
+        questions.forEach((s, i) => {
+            const div = document.createElement('div');
+            div.className = 'q-wrapper';
+            div.id = `q${i}`;
+            let optionsHtml = s.o.map((opt, idx) => {
+                const char = String.fromCharCode(97 + idx);
+                return `<label><input type="radio" name="ans${i}" value="${opt}" onchange="handelAnswer(${i})"> ${char.toUpperCase()}. ${opt}</label>`;
+            }).join('');
+            div.innerHTML = `<div class="q-text">${i+1}. ${s.q}</div><div class="options">${optionsHtml}</div>`;
+            container.appendChild(div);
+
+            const btn = document.createElement('button');
+            btn.id = `nav${i}`;
+            btn.innerText = i + 1;
+            btn.onclick = () => jump(i);
+            grid.appendChild(btn);
+        });
+        showSoal(0);
+    }
+
+    function handelAnswer(idx) {
+        document.getElementById(`nav${idx}`).classList.add('done');
+        if (currentIdx < questions.length - 1) {
+            setTimeout(() => { move(1); }, 400); // Auto Next
+        }
+    }
+
+    function showSoal(idx) {
+        document.querySelectorAll('.q-wrapper').forEach(el => el.classList.remove('active'));
+        document.getElementById(`q${idx}`).classList.add('active');
+        document.querySelectorAll('.nav-grid button').forEach(el => el.classList.remove('current'));
+        document.getElementById(`nav${idx}`).classList.add('current');
+        document.getElementById('prevBtn').disabled = (idx === 0);
+        document.getElementById('nextBtn').innerText = (idx === questions.length - 1) ? "SELESAI" : "LANJUT";
+        document.getElementById('pageInfo').innerText = `Soal ${idx + 1} / 100`;
+        currentIdx = idx;
+    }
+
+    function move(step) {
+        if (currentIdx === questions.length - 1 && step === 1) {
+            finishQuiz();
+            return;
+        }
+        showSoal(currentIdx + step);
+    }
+
+    function jump(idx) { showSoal(idx); }
+
+    function finishQuiz() {
+        if (!confirm("Apakah Anda yakin ingin mengakhiri ujian 100 soal ini?")) return;
+        
+        let scoreCount = 0;
+        const body = document.getElementById('rekapBody');
+        body.innerHTML = "";
+
+        questions.forEach((s, i) => {
+            const sel = document.querySelector(`input[name="ans${i}"]:checked`);
+            const uAnsText = sel ? sel.value : null;
+            const isCorrect = (uAnsText === s.a);
+            if (isCorrect) scoreCount++;
+
+            const row = body.insertRow();
+            row.innerHTML = `
+                <td style="text-align:center">${i+1}</td>
+                <td>
+                    <strong>${s.q}</strong><br>
+                    <small>Jawab: ${uAnsText || "-"} | Kunci: ${s.a}</small>
+                </td>
+                <td style="text-align:center" class="${isCorrect ? 'status-benar' : 'status-salah'}">${isCorrect ? 'BENAR' : 'SALAH'}</td>
+            `;
+        });
+
+        const finalScore = scoreCount; // Karena 100 soal, skor = jumlah benar
+        document.getElementById('scoreText').innerText = finalScore;
+        document.getElementById('displayUserName').innerText = pesertaName.toUpperCase();
+        
+        const msg = finalScore >= 75 ? "SELAMAT! ANDA LULUS PASSING GRADE." : "MAAF, NILAI ANDA DI BAWAH PASSING GRADE.";
+        document.getElementById('gradeMsg').innerText = msg;
+        document.getElementById('gradeMsg').style.color = finalScore >= 75 ? "green" : "red";
+
+        document.getElementById('soalContainer').style.display = 'none';
+        document.getElementById('navFooter').style.display = 'none';
+        document.getElementById('result-area').style.display = 'block';
+        window.scrollTo(0, 0);
+    }
+
+    function downloadPDF() {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+        doc.setFontSize(18);
+        doc.text("SERTIFIKAT HASIL SIMULASI TKK", 105, 20, { align: "center" });
+        doc.setFontSize(12);
+        doc.text("Nama Peserta: " + pesertaName.toUpperCase(), 105, 30, { align: "center" });
+        doc.setFontSize(30);
+        doc.text("SKOR: " + document.getElementById('scoreText').textContent, 105, 45, { align: "center" });
+        doc.setFontSize(10);
+        doc.text("Diselenggarakan oleh: Persona Research & Consulting", 105, 55, { align: "center" });
+        
+        const rows = [];
+        questions.forEach((s, i) => {
+            const sel = document.querySelector(`input[name="ans${i}"]:checked`);
+            const uAnsText = sel ? sel.value : "-";
+            rows.push([i+1, s.q + "\nJawaban: " + uAnsText + " | Kunci: " + s.a, uAnsText === s.a ? "BENAR" : "SALAH"]);
+        });
+
+        doc.autoTable({
+            startY: 65,
+            head: [['No', 'Pertanyaan & Analisis', 'Status']],
+            body: rows,
+            theme: 'striped',
+            headStyles: { fillColor: [0, 0, 0] }
+        });
+        doc.save(`Hasil_TKK_100_Mix_${pesertaName}.pdf`);
+    }
+</script>
+</body>
+</html>

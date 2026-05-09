@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CAT PERSONA - 100 SOAL CAMPURAN</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+    <style>
+        :root { --gold: #C5A059; --navy: #00172D; --ivory: #F3F4F6; --black: #000000; }
+        * { box-sizing: border-box; -webkit-user-select: none; user-select: none; }
+        body { font-family: 'Segoe UI', Arial, sans-serif; background: var(--ivory); color: var(--black); margin: 0; padding: 0; line-height: 1.4; display: flex; flex-direction: column; min-height: 100vh; }
+        .container { width: 100%; max-width: 100%; background: white; margin: 0; padding: 20px; border-top: 6px solid var(--navy); flex: 1; display: flex; flex-direction: column; }
+        .header { text-align: center; border-bottom: 2px solid var(--gold); margin-bottom: 20px; padding-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
+        .header h2 { margin: 0; font-size: 1.2em; font-weight: 900; color: var(--navy); text-transform: uppercase; }
+        .timer-box { background: var(--black); color: #00FF00; padding: 8px 15px; border-radius: 6px; font-family: monospace; font-size: 1.4em; font-weight: bold; }
+        #login-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--navy); display: flex; align-items: center; justify-content: center; z-index: 9999; }
+        .login-box { background: white; padding: 40px; border-radius: 12px; text-align: center; border-top: 5px solid var(--gold); width: 90%; max-width: 500px; box-shadow: 0 10px 25px rgba(0,0,0,0.3); }
+        .login-box input { width: 100%; padding: 15px; margin: 20px 0; border: 2px solid #ddd; border-radius: 6px; font-size: 1.1em; text-align: center; }
+        .btn-action { background: var(--navy); color: white; border: none; padding: 15px 30px; font-weight: bold; cursor: pointer; border-radius: 6px; font-size: 1em; text-transform: uppercase; transition: 0.3s; }
+        .q-wrapper { display: none; }
+        .q-wrapper.active { display: block; animation: fadeIn 0.2s; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .options { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 20px; }
+        @media (max-width: 768px) { .options { grid-template-columns: 1fr; } }
+        .options label { display: flex; align-items: center; padding: 16px; background: #fff; border: 1px solid #E5E7EB; border-radius: 8px; cursor: pointer; font-size: 1.05em; transition: 0.2s; }
+        .options label:hover { background: #F9FAFB; border-color: var(--navy); }
+        .options input { margin-right: 15px; transform: scale(1.4); accent-color: var(--navy); }
+        .nav-footer { margin-top: auto; padding-top: 25px; border-top: 1px solid #eee; }
+        .nav-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(45px, 1fr)); gap: 5px; margin-bottom: 20px; }
+        .nav-grid button { padding: 10px 0; font-size: 0.85em; border: 1px solid #D1D5DB; background: white; cursor: pointer; border-radius: 4px; font-weight: bold; }
+        .nav-grid button.done { background: #10B981; color: white; border-color: #059669; }
+        .nav-grid button.current { border: 2.5px solid var(--gold); background: #FFFBEB; }
+        #result-area { display: none; text-align: center; padding: 30px 0; }
+        .rekap-table { width: 100%; border-collapse: collapse; margin-top: 30px; text-align: left; }
+        .rekap-table th { background: var(--navy); color: white; padding: 15px; }
+        .rekap-table td { border: 1px solid #ddd; padding: 20px; }
+    </style>
+</head>
+<body oncontextmenu="return false">
+
+<div id="login-overlay">
+    <div class="login-box">
+        <h2 style="color:var(--navy); margin-top:0;">CAT PERSONA MIX</h2>
+        <p>Simulasi 100 Soal Terintegrasi</p>
+        <input type="text" id="userNameInput" placeholder="Masukkan Nama Lengkap..." autocomplete="off">
+        <button class="btn-action" style="width:100%" onclick="startQuiz()">MULAI UJIAN</button>
+    </div>
+</div>
+
+<div class="container">
+    <div class="header">
+        <div>
+            <h2>PERSONA RESEARCH & CONSULTING</h2>
+            <small id="userDisplay" style="color: var(--gold); font-weight: bold;"></small>
+        </div>
+        <div class="timer-box" id="timerDisplay">100:00</div>
+    </div>
+
+    <form id="quizForm" onsubmit="return false;">
+        <div id="soalContainer"></div>
+        
+        <div id="result-area">
+            <h2 style="color:var(--navy)">HASIL EVALUASI</h2>
+            <div id="statusTag" style="display:inline-block; padding:10px 20px; border-radius:50px; font-weight:bold; margin-bottom:15px;"></div>
+            <div style="font-size: 5em; font-weight: 900; color: var(--navy);" id="scoreText">0</div>
+            <p>Data skor telah dikirim otomatis ke database.</p>
+            <div style="margin: 20px 0; display: flex; justify-content: center; gap: 10px;">
+                <button type="button" class="btn-action" onclick="window.print()">CETAK PDF</button>
+                <button type="button" class="btn-action" style="background:var(--gold)" onclick="location.reload()">ULANGI</button>
+            </div>
+            <table class="rekap-table">
+                <thead><tr><th>No</th><th>Analisis Soal & Pembahasan</th><th style="text-align:center">Hasil</th></tr></thead>
+                <tbody id="rekapBody"></tbody>
+            </table>
+        </div>
+    </form>
+
+    <div class="nav-footer" id="navFooter">
+        <div style="display: flex; justify-content: space-between; margin-bottom: 20px;">
+            <button class="btn-action" id="prevBtn" onclick="move(-1)" disabled>KEMBALI</button>
+            <button class="btn-action" id="finishBtn" style="background:#DC2626" onclick="finish()">AKHIRI TES</button>
+            <button class="btn-action" id="nextBtn" onclick="move(1)">BERIKUTNYA</button>
+        </div>
+        <div class="nav-grid" id="gridNav"></div>
+    </div>
+</div>
+
+<script>
+    let pesertaName = "";
+    let timeLeft = 6000; 
+    const scriptURL = 'https://script.google.com/macros/s/AKfycbxOIRHYtwQDj5-LWObarTyziM-VphwsZoPzS0yTLHcltQCcqWOfd3wy4J7eu9KVSHleyw/exec';
+
+    const rawQuestions = [
+        // WORD (1-25)
+        {q:"Shortcut rata tengah (Center) adalah...", o:["Ctrl+L","Ctrl+R","Ctrl+E","Ctrl+J","Ctrl+P"], a:"Ctrl+E", p:"Ctrl+E = Center, Ctrl+L = Left, Ctrl+R = Right."},
+        {q:"Ekstensi file Word 2016 adalah...", o:[".doc",".docx",".rtf",".pdf",".txt"], a:".docx", p:"Versi 2007 ke atas menggunakan format .docx."},
+        {q:"Fitur surat massal di Word adalah...", o:["Mail Merge","Hyperlink","Layout","Watermark","Chart"], a:"Mail Merge", p:"Mail Merge digunakan untuk membuat banyak surat secara otomatis."},
+        {q:"Shortcut Bold (Tebal) adalah...", o:["Ctrl+B","Ctrl+I","Ctrl+U","Ctrl+T","Ctrl+N"], a:"Ctrl+B", p:"Ctrl+B berasal dari kata Bold."},
+        {q:"Shortcut Save (Simpan) adalah...", o:["Ctrl+S","Ctrl+P","Ctrl+O","Ctrl+A","Ctrl+Z"], a:"Ctrl+S", p:"Ctrl+S berasal dari kata Save."},
+        {q:"Posisi kertas tegak disebut...", o:["Portrait","Landscape","Vertical","Square","Slide"], a:"Portrait", p:"Portrait = Tegak, Landscape = Mendatar."},
+        {q:"Jarak tepi kertas ke teks adalah...", o:["Gutter","Margin","Spacing","Border","Padding"], a:"Margin", p:"Margin adalah batas halaman."},
+        {q:"Menu Page Setup ada di tab...", o:["Home","Insert","Layout","Review","View"], a:"Layout", p:"Layout/Page Layout mengatur ukuran kertas dan margin."},
+        {q:"Shortcut Select All adalah...", o:["Ctrl+A","Ctrl+C","Ctrl+V","Ctrl+X","Ctrl+S"], a:"Ctrl+A", p:"Ctrl+A berasal dari All (Semua)."},
+        {q:"Shortcut Undo adalah...", o:["Ctrl+Z","Ctrl+Y","Ctrl+U","Ctrl+V","Ctrl+X"], a:"Ctrl+Z", p:"Undo membatalkan perintah terakhir."},
+        {q:"Shortcut Print adalah...", o:["Ctrl+P","Ctrl+O","Ctrl+N","Ctrl+F","Ctrl+H"], a:"Ctrl+P", p:"Ctrl+P berasal dari kata Print."},
+        {q:"Menu menyisipkan tabel adalah...", o:["Home","Insert","Design","Review","View"], a:"Insert", p:"Insert digunakan untuk memasukkan objek baru."},
+        {q:"Shortcut Cut adalah...", o:["Ctrl+X","Ctrl+C","Ctrl+V","Ctrl+Z","Ctrl+S"], a:"Ctrl+X", p:"Ctrl+X memindahkan teks (Cut)."},
+        {q:"Shortcut Paste adalah...", o:["Ctrl+V","Ctrl+C","Ctrl+X","Ctrl+Z","Ctrl+P"], a:"Ctrl+V", p:"Ctrl+V menempelkan teks dari clipboard."},
+        {q:"Teks berulang di atas halaman disebut...", o:["Footer","Header","Margin","Watermark","Note"], a:"Header", p:"Header di atas, Footer di bawah."},
+        {q:"Shortcut Italic adalah...", o:["Ctrl+I","Ctrl+B","Ctrl+U","Ctrl+K","Ctrl+J"], a:"Ctrl+I", p:"Ctrl+I berasal dari Italic (Miring)."},
+        {q:"Shortcut Justify adalah...", o:["Ctrl+J","Ctrl+L","Ctrl+R","Ctrl+E","Ctrl+K"], a:"Ctrl+J", p:"Justify meratakan teks kiri dan kanan."},
+        {q:"Shortcut Alignment Right adalah...", o:["Ctrl+R","Ctrl+L","Ctrl+E","Ctrl+J","Ctrl+T"], a:"Ctrl+R", p:"Ctrl+R meratakan teks ke kanan."},
+        {q:"Shortcut Alignment Left adalah...", o:["Ctrl+L","Ctrl+R","Ctrl+E","Ctrl+J","Ctrl+P"], a:"Ctrl+L", p:"Ctrl+L meratakan teks ke kiri."},
+        {q:"Subscript digunakan untuk...", o:["Pangkat atas","Angka bawah","Garis bawah","Tebal","Miring"], a:"Angka bawah", p:"Subscript (bawah), Superscript (atas)."},
+        {q:"Superscript digunakan untuk...", o:["Pangkat atas","Angka bawah","Bayangan","Coret","Kecil"], a:"Pangkat atas", p:"Superscript menempatkan karakter di atas garis normal."},
+        {q:"Shortcut Find adalah...", o:["Ctrl+F","Ctrl+H","Ctrl+G","Ctrl+K","Ctrl+N"], a:"Ctrl+F", p:"Ctrl+F berasal dari kata Find (Cari)."},
+        {q:"Shortcut Replace adalah...", o:["Ctrl+H","Ctrl+F","Ctrl+G","Ctrl+R","Ctrl+Z"], a:"Ctrl+H", p:"Ctrl+H digunakan untuk mengganti kata."},
+        {q:"Orientasi Landscape adalah...", o:["Tegak","Mendatar","Miring","Terbalik","Bulat"], a:"Mendatar", p:"Landscape melebarkan tampilan secara horizontal."},
+        {q:"Menyisipkan rumus matematika pakai...", o:["Equation","Symbol","Shapes","Chart","SmartArt"], a:"Equation", p:"Equation adalah fitur penulisan rumus ilmiah."},
+
+        // EXCEL (26-50)
+        {q:"Rumus Excel diawali dengan tanda...", o:["+","-","=","*", "/"], a:"=", p:"Setiap fungsi/rumus wajib menggunakan tanda sama dengan."},
+        {q:"Pertemuan kolom dan baris adalah...", o:["Cell","Range","Sheet","Workbook","Row"], a:"Cell", p:"Cell adalah satuan terkecil di Excel (Contoh: A1)."},
+        {q:"Fungsi menjumlahkan data adalah...", o:["SUM","AVERAGE","COUNT","MAX","MIN"], a:"SUM", p:"SUM digunakan untuk total penambahan."},
+        {q:"Fungsi rata-rata adalah...", o:["SUM","AVERAGE","COUNT","MAX","MIN"], a:"AVERAGE", p:"Average menghitung nilai tengah/rata-rata."},
+        {q:"Fungsi nilai tertinggi adalah...", o:["SUM","AVERAGE","COUNT","MAX","MIN"], a:"MAX", p:"MAX mencari nilai paling besar."},
+        {q:"Fungsi nilai terendah adalah...", o:["SUM","AVERAGE","COUNT","MAX","MIN"], a:"MIN", p:"MIN mencari nilai paling kecil."},
+        {q:"VLOOKUP membaca data secara...", o:["Horizontal","Vertikal","Diagonal","Acak","Manual"], a:"Vertikal", p:"V = Vertical (VLOOKUP), H = Horizontal (HLOOKUP)."},
+        {q:"HLOOKUP membaca data secara...", o:["Horizontal","Vertikal","Diagonal","Silang","Manual"], a:"Horizontal", p:"H dalam HLOOKUP berarti Horizontal."},
+        {q:"Simbol $ berfungsi untuk...", o:["Kunci sel","Mata uang","Tambah","Hapus","Cetak"], a:"Kunci sel", p:"Simbol $ membuat alamat sel menjadi absolut."},
+        {q:"#DIV/0! terjadi karena...", o:["Rumus salah","Bagi dengan nol","Data hilang","Format beda","Sel sempit"], a:"Bagi dengan nol", p:"Kesalahan matematika membagi angka dengan angka 0."},
+        {q:"Fungsi IF digunakan untuk...", o:["Jumlah","Kondisi/Logika","Rata-rata","Cari data","Hapus"], a:"Kondisi/Logika", p:"IF mengevaluasi pernyataan benar atau salah."},
+        {q:"Shortcut tabel otomatis adalah...", o:["Ctrl+T","Ctrl+P","Ctrl+S","Ctrl+A","Ctrl+L"], a:"Ctrl+T", p:"Ctrl+T (Table) merubah range menjadi tabel resmi."},
+        {q:"Fungsi COUNT menghitung...", o:["Total angka","Jumlah sel berisi angka","Rata-rata","Maksimal","Minimal"], a:"Jumlah sel berisi angka", p:"COUNT menghitung frekuensi sel yang ada datanya."},
+        {q:"Simbol perkalian adalah...", o:["x","*",".","^","&"], a:"*", p:"Bintang (*) adalah operator kali dalam komputer."},
+        {q:"Simbol pembagian adalah...", o:[":","/", "\\","%","|"], a:"/", p:"Garis miring (/) adalah operator bagi."},
+        {q:"Simbol pangkat adalah...", o:["^","*","/","+","-"], a:"^", p:"Caret (^) digunakan untuk perpangkatan (Contoh: 2^3)."},
+        {q:"Ekstensi Excel terbaru adalah...", o:[".xls",".xlsx",".csv",".xlsm",".xml"], a:".xlsx", p:"Sejak Excel 2007 format standar adalah .xlsx."},
+        {q:"Menggabungkan sel menggunakan...", o:["Merge & Center","Wrap Text","Filter","Sort","Freeze"], a:"Merge & Center", p:"Merge menggabung sel, Center meratakan tengah."},
+        {q:"Mengurutkan data A-Z menggunakan...", o:["Sort","Filter","Freeze","Split","Group"], a:"Sort", p:"Sort (Sorting) digunakan untuk pengurutan."},
+        {q:"Fungsi LEFT mengambil teks dari...", o:["Kiri","Kanan","Tengah","Awal","Akhir"], a:"Kiri", p:"LEFT (Kiri), RIGHT (Kanan), MID (Tengah)."},
+        {q:"Fungsi RIGHT mengambil teks dari...", o:["Kiri","Kanan","Tengah","Awal","Akhir"], a:"Kanan", p:"RIGHT mengambil karakter dari posisi paling belakang."},
+        {q:"Fungsi LEN menghitung...", o:["Karakter","Angka","Total","Sel","Baris"], a:"Karakter", p:"LEN (Length) menghitung panjang karakter teks."},
+        {q:"Garis bantu sel disebut...", o:["Border","Gridlines","Frame","Layout","Shadow"], a:"Gridlines", p:"Gridlines adalah garis abu-abu pemisah sel di Excel."},
+        {q:"Kumpulan beberapa sel disebut...", o:["Range","Cell","Column","Row","Sheet"], a:"Range", p:"Range adalah area yang terdiri dari lebih dari satu sel."},
+        {q:"Shortcut ke sel A1 adalah...", o:["Ctrl+Home","Ctrl+End","Ctrl+A","Ctrl+Up","Ctrl+G"], a:"Ctrl+Home", p:"Home membawa kursor ke posisi awal dokumen."},
+
+        // PPT (51-75)
+        {q:"Lembar kerja PPT disebut...", o:["Document","Sheet","Slide","Frame","Page"], a:"Slide", p:"Presentasi terdiri dari sekumpulan slide."},
+        {q:"Shortcut Show dari awal adalah...", o:["F1","F5","Shift+F5","Ctrl+P","Esc"], a:"F5", p:"F5 menjalankan presentasi dari nomor 1."},
+        {q:"Shortcut Show dari slide aktif...", o:["F5","Shift+F5","Ctrl+M","Ctrl+N","Esc"], a:"Shift+F5", p:"Shift+F5 menjalankan slide yang sedang dipilih."},
+        {q:"Pindah antar slide disebut...", o:["Animation","Transition","Design","Theme","Layout"], a:"Transition", p:"Transition adalah efek pergantian halaman slide."},
+        {q:"Efek gerak objek di slide...", o:["Transition","Animation","SmartArt","WordArt","Action"], a:"Animation", p:"Animation diberikan pada gambar atau teks di dalam slide."},
+        {q:"Shortcut New Slide adalah...", o:["Ctrl+M","Ctrl+N","Ctrl+D","Ctrl+S","Ctrl+A"], a:"Ctrl+M", p:"Ctrl+M (New Slide), bukan Ctrl+N (New File)."},
+        {q:"Shortcut Duplikasi Slide adalah...", o:["Ctrl+D","Ctrl+M","Ctrl+C","Ctrl+V","Ctrl+X"], a:"Ctrl+D", p:"Ctrl+D (Duplicate) menyalin slide secara instan."},
+        {q:"Tombol mengakhiri Show adalah...", o:["Enter","Esc","Space","Tab","Shift"], a:"Esc", p:"Esc (Escape) membatalkan mode Slide Show."},
+        {q:"Animasi Entrance berwarna...", o:["Hijau","Kuning","Merah","Biru","Putih"], a:"Hijau", p:"Hijau = Masuk, Kuning = Penekanan, Merah = Keluar."},
+        {q:"Animasi Exit berwarna...", o:["Hijau","Kuning","Merah","Biru","Putih"], a:"Merah", p:"Merah menandakan objek akan hilang dari slide."},
+        {q:"Ekstensi PowerPoint terbaru...", o:[".ppt",".pptx",".ppsx",".pdf",".xml"], a:".pptx", p:".pptx adalah format berbasis XML."},
+        {q:"Slide Master berfungsi untuk...", o:["Animasi","Layout seragam","Video","Suara","Cetak"], a:"Layout seragam", p:"Master slide mengatur desain seluruh slide sekaligus."},
+        {q:"Slide Sorter menampilkan...", o:["Layar penuh","Thumbnail","Teks","Video","Daftar"], a:"Thumbnail", p:"Sorter mempermudah penyusunan urutan slide."},
+        {q:"Shortcut Ctrl+K untuk...", o:["Hyperlink","Simpan","Cetak","Bold","Cari"], a:"Hyperlink", p:"Ctrl+K menyisipkan tautan (link)."},
+        {q:"Menu memasukkan audio/video...", o:["Insert","Design","Home","Review","View"], a:"Insert", p:"Semua media dimasukkan via menu Insert."},
+        {q:"SmartArt digunakan untuk...", o:["Diagram","Tabel","Video","Foto","Animasi"], a:"Diagram", p:"SmartArt memvisualisasikan informasi/proses."},
+        {q:"Handouts adalah cetakan untuk...", o:["1 slide/lembar","Beberapa slide/lembar","Hanya teks","Video","Suara"], a:"Beberapa slide/lembar", p:"Handouts menghemat kertas saat mencetak presentasi."},
+        {q:".ppsx membuat presentasi...", o:["Bisa edit","Langsung Show","PDF","Gambar","Berhenti"], a:"Langsung Show", p:"Format Show tidak masuk ke editor, langsung tayang."},
+        {q:"Rehearse Timings merekam...", o:["Suara","Waktu slide","Warna","Hapus","Simpan"], a:"Waktu slide", p:"Berguna untuk latihan durasi presentasi."},
+        {q:"Animasi Emphasis berwarna...", o:["Hijau","Kuning","Merah","Biru","Putih"], a:"Kuning", p:"Emphasis (Penekanan) memberi efek pada objek yang sudah ada."},
+        {q:"Menu Layout slide ada di tab...", o:["Home","Insert","Design","Transitions","View"], a:"Home", p:"Home > Layout digunakan untuk memilih tata letak konten."},
+        {q:"Pena saat Show diaktifkan dengan...", o:["Ctrl+P","Ctrl+S","Ctrl+L","Ctrl+A","Esc"], a:"Ctrl+P", p:"Ctrl+P (Pen) memudahkan saat presentasi interaktif."},
+        {q:"Catatan di bawah slide disebut...", o:["Notes","Header","Footer","Comments","Caption"], a:"Notes", p:"Notes membantu pembicara mengingat poin penting."},
+        {q:"Design Ideas memberikan...", o:["Layout otomatis","Cetak","Simpan","Hapus","Suara"], a:"Layout otomatis", p:"Fitur AI PowerPoint untuk mempercantik slide."},
+        {q:"Loop until Esc berarti slide...", o:["Berhenti","Berulang terus","Acak","Sekali","Lambat"], a:"Berulang terus", p:"Biasanya dipakai untuk pameran agar slide tidak mati."},
+
+        // HARDWARE/OS/INTERNET (76-100)
+        {q:"Otak komputer adalah...", o:["RAM","Harddisk","CPU","Monitor","Keyboard"], a:"CPU", p:"CPU (Central Processing Unit) memproses data."},
+        {q:"Memori penyimpanan sementara...", o:["SSD","HDD","RAM","ROM","Flashdisk"], a:"RAM", p:"RAM bersifat volatile (hilang saat listrik mati)."},
+        {q:"Aplikasi buka website adalah...", o:["Server","Browser","URL","ISP","Search Engine"], a:"Browser", p:"Contoh browser: Chrome, Firefox, Edge."},
+        {q:"WWW singkatan dari...", o:["World Wide Web","World Wide Wave","Web Wide World","Web Web","World Web"], a:"World Wide Web", p:"Jaringan dokumen global di internet."},
+        {q:"Sistem operasi Windows buatan...", o:["Apple","Google","Microsoft","Linux","IBM"], a:"Microsoft", p:"Bill Gates adalah salah satu pendiri Microsoft."},
+        {q:"Printer adalah perangkat...", o:["Input","Output","Proses","Storage","Network"], a:"Output", p:"Output mengeluarkan data fisik (cetak)."},
+        {q:"Keyboard adalah perangkat...", o:["Input","Output","Proses","Storage","Network"], a:"Input", p:"Input memasukkan data ke komputer."},
+        {q:"Stabilizer berfungsi untuk...", o:["Stabil arus","Baterai","Antivirus","Cetak","Scan"], a:"Stabil arus", p:"Menjaga tegangan listrik agar tetap stabil."},
+        {q:"UPS adalah cadangan...", o:["Data","Listrik","Monitor","Kabel","CPU"], a:"Listrik", p:"UPS memberi daya saat mati lampu agar PC tidak rusak."},
+        {q:"Pencurian data via web palsu...", o:["Hacking","Spam","Phishing","Cracking","Malware"], a:"Phishing", p:"Phishing (memancing) user memasukkan data login."},
+        {q:"Protokol website aman adalah...", o:["http","https","ftp","mailto","www"], a:"https", p:"S dalam HTTPS artinya Secure (Aman)."},
+        {q:"SSD lebih ... daripada HDD.", o:["Lambat","Cepat","Kecil","Cheap","Lama"], a:"Cepat", p:"SSD menggunakan chip, HDD menggunakan piringan cakram."},
+        {q:"Shortcut tutup aplikasi...", o:["Alt+F4","Alt+Tab","Ctrl+C","Ctrl+V","F5"], a:"Alt+F4", p:"Alt+F4 mengakhiri program yang sedang berjalan."},
+        {q:"Software pelindung virus...", o:["Browser","OS","Antivirus","Firewall","Utility"], a:"Antivirus", p:"Antivirus menscan dan menghapus ancaman digital."},
+        {q:"Alamat unik situs web disebut...", o:["URL","IP Address","Domain","Hosting","Website"], a:"URL", p:"URL adalah link alamat lengkap situs."},
+        {q:"Domain pemerintah RI adalah...", o:[".com",".net",".go.id",".ac.id",".or.id"], a:".go.id", p:"GO.ID = Government Indonesia."},
+        {q:"Sistem operasi logo Pinguin...", o:["Windows","Linux","macOS","Solaris","FreeBSD"], a:"Linux", p:"Linux adalah sistem operasi open-source."},
+        {q:"Shortcut Lock Screen (Kunci)...", o:["Windows+L","Windows+D","Windows+E","Windows+R","Windows+I"], a:"Windows+L", p:"L berasal dari kata Lock (Kunci)."},
+        {q:"Satuan data terkecil...", o:["Byte","Bit","KB","MB","GB"], a:"Bit", p:"Bit adalah satuan biner (0 atau 1)."},
+        {q:"Monitor adalah output...", o:["Visual","Audio","Cetak","Data","Arus"], a:"Visual", p:"Visual berupa tampilan gambar di layar."},
+        {q:"Layanan email milik Google...", o:["Yahoo","Outlook","Gmail","iCloud","AOL"], a:"Gmail", p:"Google Mail disingkat menjadi Gmail."},
+        {q:"Browser buatan Google...", o:["Firefox","Safari","Edge","Chrome","Opera"], a:"Chrome", p:"Chrome saat ini adalah browser paling populer."},
+        {q:"Orang yang operasikan komputer...", o:["Hardware","Software","Brainware","Firmware","Malware"], a:"Brainware", p:"Manusia adalah komponen cerdasnya (Brainware)."},
+        {q:"Alat hubungkan internet...", o:["Printer","Scanner","Modem","Monitor","Mouse"], a:"Modem", p:"Modem merubah sinyal digital ke analog/sebaliknya."},
+        {q:"Scanner berfungsi untuk...", o:["Cetak","Pindai fisik ke digital","Video","Suara","Simpan"], a:"Pindai fisik ke digital", p:"Merubah kertas/dokumen menjadi file gambar/PDF."}
+    ];
+
+    let questions = [];
+    let userAnswers = [];
+    let currentIdx = 0;
+
+    function shuffle(array) {
+        for (let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]];
+        }
+        return array;
+    }
+
+    function startQuiz() {
+        pesertaName = document.getElementById('userNameInput').value.trim();
+        if(!pesertaName) { alert("Nama wajib diisi!"); return; }
+        
+        document.getElementById('login-overlay').style.display = 'none';
+        document.getElementById('userDisplay').textContent = "PESERTA: " + pesertaName.toUpperCase();
+        
+        questions = shuffle([...rawQuestions]);
+        userAnswers = new Array(questions.length).fill(null);
+        
+        initUI();
+        startTimer();
+    }
+
+    function initUI() {
+        const cont = document.getElementById('soalContainer');
+        const grid = document.getElementById('gridNav');
+        questions.forEach((s, i) => {
+            const div = document.createElement('div');
+            div.className = `q-wrapper ${i === 0 ? 'active' : ''}`;
+            div.id = `q${i}`;
+            
+            let opts = "";
+            const labels = ['A','B','C','D','E'];
+            s.o.forEach((opt, idx) => {
+                opts += `<label><input type="radio" name="ans${i}" value="${opt}" onclick="save(${i}, '${opt}')"> ${labels[idx]}. ${opt}</label>`;
+            });
+
+            div.innerHTML = `<div style="font-weight:bold; color:var(--gold); margin-bottom:10px;">SOAL NO. ${i+1}</div>
+                             <div style="font-size:1.3em; font-weight:600; margin-bottom:20px;">${s.q}</div>
+                             <div class="options">${opts}</div>`;
+            cont.appendChild(div);
+
+            const btn = document.createElement('button');
+            btn.id = `nav${i}`; btn.textContent = i + 1;
+            btn.onclick = () => jump(i);
+            grid.appendChild(btn);
+        });
+    }
+
+    // FUNGSI SAVE DENGAN AUTO-NEXT
+    function save(idx, val) {
+        userAnswers[idx] = val;
+        const navBtn = document.getElementById(`nav${idx}`);
+        if(navBtn) navBtn.classList.add('done');
+
+        // Fitur Auto-Next
+        if (idx < questions.length - 1) {
+            setTimeout(() => {
+                move(1);
+            }, 300); 
+        }
+    }
+
+    function jump(idx) {
+        document.querySelector('.q-wrapper.active').classList.remove('active');
+        document.getElementById(`q${idx}`).classList.add('active');
+        currentIdx = idx;
+        updateButtons();
+        window.scrollTo(0,0);
+    }
+
+    function move(step) { 
+        let target = currentIdx + step;
+        if(target >= 0 && target < questions.length) jump(target); 
+    }
+
+    function updateButtons() {
+        document.querySelectorAll('.nav-grid button').forEach(b => b.classList.remove('current'));
+        document.getElementById(`nav${currentIdx}`).classList.add('current');
+        document.getElementById('prevBtn').disabled = currentIdx === 0;
+        document.getElementById('nextBtn').disabled = currentIdx === questions.length - 1;
+    }
+
+    function startTimer() {
+        const timerInt = setInterval(() => {
+            if(timeLeft <= 0) { clearInterval(timerInt); finish(); }
+            timeLeft--;
+            let m = Math.floor(timeLeft/60);
+            let s = timeLeft%60;
+            document.getElementById('timerDisplay').textContent = `${m}:${s < 10 ? '0' : ''}${s}`;
+        }, 1000);
+    }
+
+    function finish() {
+        if(!confirm("Kirim jawaban sekarang?")) return;
+        
+        const finishBtn = document.getElementById('finishBtn');
+        finishBtn.disabled = true;
+        finishBtn.textContent = "MENGIRIM...";
+
+        let score = 0;
+        const rekap = document.getElementById('rekapBody');
+        rekap.innerHTML = '';
+        
+        questions.forEach((s, i) => {
+            const isCorrect = userAnswers[i] === s.a;
+            if(isCorrect) score++;
+            rekap.innerHTML += `
+                <tr style="background:${isCorrect ? '#F0FDF4' : '#FEF2F2'}">
+                    <td>${i+1}</td>
+                    <td>
+                        <b>${s.q}</b><br>
+                        <small>Jawaban Anda: ${userAnswers[i] || 'KOSONG'} | Kunci: ${s.a}</small><br>
+                        <div style="margin-top:10px; font-style:italic; font-size:0.9em; color:#555">Pembahasan: ${s.p}</div>
+                    </td>
+                    <td style="text-align:center; font-weight:bold; color:${isCorrect ? '#10B981' : '#DC2626'}">${isCorrect ? 'BENAR' : 'SALAH'}</td>
+                </tr>`;
+        });
+
+        // KIRIM KE GOOGLE SHEETS
+        fetch(scriptURL, {
+            method: 'POST',
+            mode: 'no-cors',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ nama: pesertaName, skor: score })
+        })
+        .then(() => {
+            showFinal(score);
+        })
+        .catch(err => {
+            console.error(err);
+            showFinal(score);
+        });
+    }
+
+    function showFinal(score) {
+        document.getElementById('scoreText').textContent = score;
+        document.getElementById('soalContainer').style.display = 'none';
+        document.getElementById('navFooter').style.display = 'none';
+        document.getElementById('result-area').style.display = 'block';
+        
+        const tag = document.getElementById('statusTag');
+        if(score >= 75) {
+            tag.textContent = "MEMENUHI SYARAT (MS)";
+            tag.style.background = "#D1FAE5"; tag.style.color = "#065F46";
+        } else {
+            tag.textContent = "TIDAK MEMENUHI SYARAT (TMS)";
+            tag.style.background = "#FEE2E2"; tag.style.color = "#991B1B";
+        }
+        window.scrollTo(0,0);
+    }
+</script>
+</body>
+</html>

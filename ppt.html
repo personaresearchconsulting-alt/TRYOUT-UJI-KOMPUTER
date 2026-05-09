@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CAT POWERPOINT - Persona Research & Consulting</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+    <style>
+        :root { --gold: #D4AF37; --ivory: #FFFFF0; --black: #000000; }
+        * { box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Arial, sans-serif; background: var(--ivory); color: var(--black); margin: 0; padding: 10px; line-height: 1.4; display: flex; flex-direction: column; min-height: 100vh; user-select: none; }
+        
+        .container { max-width: 850px; background: white; margin: auto; padding: 15px; border-radius: 10px; border-top: 6px solid var(--black); box-shadow: 0 4px 15px rgba(0,0,0,0.1); flex: 1; display: flex; flex-direction: column; }
+        
+        .header { text-align: center; border-bottom: 2px solid var(--gold); margin-bottom: 15px; padding-bottom: 10px; }
+        .header h2 { margin: 0; font-size: 1.2em; font-weight: 900; text-transform: uppercase; }
+        
+        #login-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--black); display: flex; align-items: center; justify-content: center; z-index: 9999; }
+        .login-box { background: white; padding: 30px; border-radius: 12px; text-align: center; border-top: 5px solid var(--gold); width: 90%; max-width: 400px; }
+        .login-box input { width: 100%; padding: 12px; margin: 15px 0; border: 2px solid #ddd; border-radius: 6px; font-size: 1em; text-align: center; }
+
+        .q-wrapper { display: none; width: 100%; }
+        .q-wrapper.active { display: block; animation: fadeIn 0.2s; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        
+        .q-text { color: var(--black); font-weight: bold; font-size: 1.1em; margin-bottom: 15px; border-left: 4px solid var(--gold); padding-left: 10px; }
+        .options { display: grid; gap: 8px; }
+        .options label { display: flex; align-items: center; padding: 12px; background: #fefefe; border: 1px solid #ddd; border-radius: 8px; cursor: pointer; font-size: 1em; color: var(--black); transition: 0.2s; }
+        .options label:hover { background: #fff9e6; border-color: var(--gold); }
+        .options input { margin-right: 12px; transform: scale(1.3); accent-color: var(--black); }
+
+        .nav-footer { margin-top: 30px; padding-top: 15px; border-top: 1px solid #eee; }
+        .nav-grid { display: grid; grid-template-columns: repeat(10, 1fr); gap: 4px; margin-bottom: 15px; }
+        .nav-grid button { padding: 6px 0; font-size: 0.75em; border: 1px solid #ccc; background: white; cursor: pointer; border-radius: 4px; color: var(--black); }
+        .nav-grid button.done { background: var(--black); color: white; border-color: var(--black); }
+        .nav-grid button.current { border: 2px solid var(--gold); font-weight: bold; }
+
+        .btn-action { background: var(--black); color: white; border: none; padding: 12px 25px; font-weight: bold; cursor: pointer; border-radius: 6px; font-size: 1em; transition: 0.3s; margin: 5px; }
+        .btn-action:hover { background: var(--gold); color: var(--black); }
+        .btn-download { background: #28a745; }
+
+        #result-area { display: none; text-align: center; padding: 20px 0; }
+        .score-val { font-size: 4.5em; font-weight: bold; color: var(--black); margin: 5px 0; }
+        
+        .rekap-table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 0.85em; text-align: left; }
+        .rekap-table th, .rekap-table td { border: 1px solid #ddd; padding: 10px; }
+        .rekap-table th { background: #f2f2f2; text-align: center; }
+        .status-benar { color: green; font-weight: bold; }
+        .status-salah { color: red; font-weight: bold; }
+
+        .page-footer { text-align: center; padding: 15px; font-size: 0.9em; color: var(--black); font-weight: bold; }
+    </style>
+</head>
+<body oncontextmenu="return false" oncopy="return false" oncut="return false">
+
+<div id="login-overlay">
+    <div class="login-box">
+        <h3 style="margin-top:0;">SIMULASI CAT POWERPOINT</h3>
+        <p>Silakan masukkan nama peserta:</p>
+        <input type="text" id="userNameInput" placeholder="Ketik Nama Lengkap..." autocomplete="off">
+        <button class="btn-action" onclick="startQuiz()">MULAI SIMULASI</button>
+    </div>
+</div>
+
+<div class="container">
+    <div class="header">
+        <h2>PERSONA RESEARCH & CONSULTING</h2>
+        <small style="color: var(--gold); font-weight: bold; letter-spacing: 1px;">MODUL: MICROSOFT POWERPOINT</small>
+    </div>
+
+    <form id="quizForm">
+        <div id="soalContainer"></div>
+        
+        <div id="result-area">
+            <h3 id="displayUserName" style="margin-bottom:0; color:var(--gold);"></h3>
+            <h2 style="margin:0;">HASIL SIMULASI</h2>
+            <div class="score-val" id="scoreText">0</div>
+            
+            <button type="button" class="btn-action btn-download" onclick="downloadPDF()">DOWNLOAD PDF PEMBAHASAN</button>
+            <button type="button" class="btn-action" onclick="location.reload()">ULANGI TES</button>
+
+            <div style="overflow-x: auto; margin-top: 20px;">
+                <table class="rekap-table" id="tableRekap">
+                    <thead>
+                        <tr>
+                            <th style="width: 50px;">No</th>
+                            <th>Pertanyaan & Pembahasan</th>
+                            <th style="width: 100px;">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="rekapBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </form>
+
+    <div class="nav-footer" id="navFooter">
+        <div style="display: flex; justify-content: space-between; margin-bottom: 15px;">
+            <button class="btn-action" id="prevBtn" onclick="move(-1)" disabled>KEMBALI</button>
+            <button class="btn-action" id="nextBtn" onclick="move(1)">LANJUT</button>
+        </div>
+        <div class="nav-grid" id="gridNav"></div>
+    </div>
+</div>
+
+<footer class="page-footer">
+    Persona Research & Consulting | WA: 0877 4251 5786
+</footer>
+
+<script>
+    let pesertaName = "";
+    // Data Soal dari File MS Power Point (Total 90 Soal)
+    const rawQuestions = [
+        {q: "Tools yang terdiri dari item yang berhubungan dengan pengaturan huruf atau tulisan adalah…", o: ["Standard tool bar", "Table tool bar", "Formatting tool bar", "Menu tool bar"], a: "d"},
+        {q: "Tools untuk menangani file, menyisipkan object baik gambar atau grafik disebut…", o: ["Drawing tool bar", "Formatting tool bar", "Standard tool bar", "Menu tool bar"], a: "a"},
+        {q: "Perintah yang digunakan untuk merubah layout pada suatu slide adalah…", o: ["Format – slide", "Format – layout", "Format – slide layout", "Format – style layout"], a: "a"},
+        {q: "Kegunaan kotak dialog color scheme adalah…", o: ["Merubah pola warna teks", "Merubah pola warna slide", "Merubah pola clipart", "Merubah pola presentasi"], a: "a"},
+        {q: "Kegunaan dari format-background adalah…", o: ["Merubah latar belakang monitor", "Merubah latar belakang desktop", "Merubah latar belakang slide", "Merubah latar belakang shape tool"], a: "c"},
+        {q: "Kegunaan dari tombol “Apply” pada kotak dialog format-background adalah…", o: ["Mengaktifkan pilihan pada setiap presentasi", "Mengaktifkan pilihan pada slide aktif", "Mengaktifkan pilihan pada presentasi aktif", "Mengaktifkan pilihan pada setiap slide"], a: "b"},
+        {q: "Program yang biasa digunakan untuk pembuatan slide untuk presentasi agar terlihat lebih mudah disebut…", o: ["MS. Access", "MS. Word", "MS. Excel", "MS. Power Point"], a: "d"},
+        {q: "Langkah-langkah yang tepat untuk mengaktifkan program MS. Power Point adalah…", o: ["Start – Program – MS. Office – MS. Power Point", "Start – Program – MS. Power Point", "Start – Program – MS. Word", "Start – Program – MS. Excel"], a: "a"},
+        {q: "Cara untuk membuat sebuah file presentasi yang baru adalah…", o: ["File – New", "File – Open", "File – Save", "File – Print"], a: "a"},
+        {q: "Untuk menampilkan lembar presentasi dalam satu layar penuh dapat dilakukan dengan menggunakan…", o: ["Slide Show", "View – Slide Show", "F5", "Semua benar"], a: "d"},
+        {q: "Untuk menampilkan atau mencetak file presentasi ke dalam kertas, maka menggunakan perintah…", o: ["File – Open", "File – Print", "File – Save", "File – New"], a: "b"},
+        {q: "Shortcut yang digunakan untuk melakukan proses cetak file adalah…", o: ["Ctrl + O", "Ctrl + S", "Ctrl + P", "Ctrl + N"], a: "c"},
+        {q: "Pilihan menu “Handouts” pada kotak dialog Print digunakan untuk mencetak…", o: ["Satu slide dalam satu kertas", "Beberapa slide dalam satu kertas", "Semua slide", "Halaman yang sedang aktif"], a: "b"},
+        {q: "Extension atau format file yang dihasilkan oleh MS. Power Point adalah…", o: [".doc", ".xls", ".ppt", ".mdb"], a: "c"},
+        {q: "Untuk menyisipkan gambar dari file ke dalam slide, maka perintahnya adalah…", o: ["Insert – Picture – Clipart", "Insert – Picture – From file", "Insert – Clipart – From file", "Insert – Picture – WordArt"], a: "b"},
+        {q: "Tombol pada keyboard yang digunakan untuk membatalkan perintah adalah…", o: ["Enter", "Esc", "Shift", "Ctrl"], a: "b"},
+        {q: "Bagian MS. Power Point yang digunakan untuk menampilkan nama file yang sedang aktif adalah…", o: ["Title Bar", "Menu Bar", "Status Bar", "Tool Bar"], a: "a"},
+        {q: "Kumpulan perintah yang digunakan untuk mengatur objek adalah…", o: ["Menu Bar", "Standard Tool Bar", "Formatting Tool Bar", "Drawing Tool Bar"], a: "d"},
+        {q: "Perintah “Slide Transition” terdapat pada menu…", o: ["Format", "Insert", "Slide Show", "View"], a: "c"},
+        {q: "Untuk memberikan efek animasi pada teks atau gambar agar tampilan lebih menarik, menggunakan…", o: ["Slide Show – Custom Animation", "Format – Slide Transition", "Slide Show – Animation Schemes", "Format – Animation Schemes"], a: "a"},
+        {q: "Toolbar yang berisi ikon New, Open, Save adalah...", o: ["Formatting", "Drawing", "Standard", "Slide Sorter"], a: "c"},
+        {q: "Untuk memilih layout slide yang diinginkan menggunakan menu...", o: ["Slide Layout", "Slide Design", "Background", "Color Scheme"], a: "a"},
+        {q: "Ikon yang digunakan untuk membuat teks seni (dekoratif) adalah...", o: ["Text Box", "WordArt", "ClipArt", "AutoShapes"], a: "b"},
+        {q: "Cara menghapus slide adalah dengan klik kanan pada slide lalu pilih...", o: ["New Slide", "Delete Slide", "Hide Slide", "Cut"], a: "b"},
+        {q: "Tombol F5 pada Power Point berfungsi untuk...", o: ["Menyimpan file", "Menghapus slide", "Menampilkan slide show", "Membuka file"], a: "c"},
+        {q: "Untuk mengatur waktu perpindahan slide secara otomatis menggunakan...", o: ["Custom Animation", "Rehearse Timings", "Slide Layout", "Slide Design"], a: "b"},
+        {q: "File presentasi yang siap dijalankan tanpa aplikasi Power Point memiliki ekstensi...", o: [".ppt", ".pptx", ".pps", ".pot"], a: "c"},
+        {q: "Menu yang digunakan untuk memasukkan diagram ke dalam slide adalah...", o: ["Insert - Table", "Insert - Chart", "Insert - Picture", "Insert - File"], a: "b"},
+        {q: "Garis bantu pada slide untuk menempatkan teks disebut...", o: ["Placeholder", "Text Box", "Slide Master", "Gridlines"], a: "a"},
+        {q: "Untuk memberikan latar belakang slide berupa gradasi warna menggunakan...", o: ["Pattern", "Texture", "Gradient", "Picture"], a: "c"},
+        {q: "Langkah untuk menyisipkan slide baru adalah...", o: ["Ctrl + M", "Ctrl + N", "Ctrl + S", "Ctrl + O"], a: "a"},
+        {q: "Untuk menggabungkan beberapa objek menjadi satu menggunakan perintah...", o: ["Align", "Order", "Group", "Rotate"], a: "c"},
+        {q: "Agar presentasi dapat berjalan terus-menerus (looping) diatur di menu...", o: ["Set Up Slide Show", "Custom Show", "Action Buttons", "Transition"], a: "a"},
+        {q: "Untuk menyisipkan suara ke dalam slide menggunakan perintah...", o: ["Insert - Movie", "Insert - Sound", "Insert - Object", "Insert - Picture"], a: "b"},
+        {q: "Shortcut untuk keluar dari program PowerPoint adalah...", o: ["Alt + F4", "Ctrl + F4", "Ctrl + W", "Alt + Tab"], a: "a"},
+        {q: "Fungsi dari ikon 'Align Left' adalah...", o: ["Rata Kanan", "Rata Tengah", "Rata Kiri", "Rata Kanan Kiri"], a: "c"},
+        {q: "Untuk memindahkan urutan slide, kita dapat menggunakan tampilan...", o: ["Normal View", "Outline View", "Slide Sorter View", "Notes Page View"], a: "c"},
+        {q: "Menu untuk mengatur ukuran kertas slide adalah...", o: ["Page Setup", "Slide Orientation", "Grid and Guides", "Header and Footer"], a: "a"},
+        {q: "Ikon 'Bold' digunakan untuk...", o: ["Mencetak miring", "Menebalkan huruf", "Garis bawah", "Mewarnai huruf"], a: "b"},
+        {q: "Perintah 'Undo' berfungsi untuk...", o: ["Membatalkan perintah terakhir", "Mengulang perintah", "Menghapus data", "Menyimpan data"], a: "a"},
+        {q: "Yang termasuk program presentasi selain PowerPoint adalah...", o: ["Keynote", "Excel", "Access", "Word"], a: "a"},
+        {q: "Ikon 'Paste' digunakan untuk...", o: ["Menyalin", "Memotong", "Menempelkan hasil salinan", "Menghapus"], a: "c"},
+        {q: "Untuk membuat tabel dalam slide menggunakan menu...", o: ["Insert - Table", "Format - Table", "Slide - Table", "Tools - Table"], a: "a"},
+        {q: "Area kerja utama untuk membuat slide disebut...", o: ["Slide Pane", "Task Pane", "Notes Pane", "Outline Pane"], a: "a"},
+        {q: "Untuk memberikan bayangan pada teks menggunakan ikon...", o: ["Shadow", "Italic", "Underline", "Bold"], a: "a"},
+        {q: "Perintah 'Save As' digunakan untuk...", o: ["Menyimpan dengan nama yang sama", "Menyimpan dengan nama berbeda", "Membuka file baru", "Menghapus file"], a: "b"},
+        {q: "Ikon 'New' pada toolbar standard berfungsi untuk...", o: ["Membuka file", "Membuat file baru", "Menyimpan file", "Mencetak file"], a: "b"},
+        {q: "Untuk mengatur spasi baris teks menggunakan menu...", o: ["Line Spacing", "Font Size", "Font Style", "Alignment"], a: "a"},
+        {q: "Menu 'Slide Show - View Show' sama fungsinya dengan menekan tombol...", o: ["F1", "F2", "F5", "F12"], a: "c"},
+        {q: "Ikon 'Print Preview' berfungsi untuk...", o: ["Mencetak langsung", "Melihat tampilan sebelum dicetak", "Mengatur kertas", "Menyimpan file"], a: "b"},
+        {q: "Untuk menyisipkan objek grafik menggunakan...", o: ["Insert - Chart", "Insert - Picture", "Insert - Object", "Insert - ClipArt"], a: "a"},
+        {q: "Perintah untuk memotong objek adalah...", o: ["Copy", "Paste", "Cut", "Delete"], a: "c"},
+        {q: "Ikon 'Center' digunakan untuk teks rata...", o: ["Kiri", "Kanan", "Tengah", "Kanan-Kiri"], a: "c"},
+        {q: "Shortcut untuk menyimpan file adalah...", o: ["Ctrl + S", "Ctrl + P", "Ctrl + O", "Ctrl + N"], a: "a"},
+        {q: "Untuk mengubah warna huruf menggunakan ikon...", o: ["Font Color", "Highlight", "Fill Color", "Line Color"], a: "a"},
+        {q: "Format standar PowerPoint 2007 ke atas adalah...", o: [".ppt", ".pptx", ".pptm", ".ppsx"], a: "b"},
+        {q: "Untuk memberikan efek transisi pada slide menggunakan menu...", o: ["Animations", "Transitions", "Design", "Insert"], a: "b"},
+        {q: "Fungsi dari Slide Master adalah...", o: ["Mengatur desain semua slide secara masal", "Menghapus semua slide", "Mencetak slide", "Menyimpan slide"], a: "a"},
+        {q: "Untuk menyisipkan nomor halaman pada slide menggunakan...", o: ["Header and Footer", "Slide Number", "Page Setup", "A dan B benar"], a: "d"},
+        {q: "Ikon 'Underline' digunakan untuk...", o: ["Menebalkan", "Memiringkan", "Memberi garis bawah", "Menghapus"], a: "c"},
+        // Soal Tambahan dari bagian akhir file
+        {q: "Menu untuk menambahkan efek animasi pada power point 2007….", o: ["insert", "new", "save", "animation"], a: "d"},
+        {q: "Untuk mengatur template pada power point 2007, maka yang dipilih…", o: ["Insert lalu pilih picture", "slide sow lalu pilih set up", "insert lalu pilih media clip", "design lalu pilih themes"], a: "d"},
+        {q: "Berikut ini adalah icon yang ada di Office button, kecuali….", o: ["save", "publish", "insert", "open"], a: "c"},
+        {q: "Tombol office button berisi….", o: ["Fitur kategori grup", "Perintah manajemen dokumen", "Tombol worksheet", "Nama file aktif"], a: "b"},
+        {q: "Presentasi visual biasanya menggunakan media", o: ["video", "gambar", "suara", "teks"], a: "b"},
+        {q: "Tombol quick acces toolbar berisi….", o: ["shortcut perintah yang digunakan", "manajemen dokumen", "tombol worksheet", "nama file aktif"], a: "a"},
+        {q: "Untuk membuka file powerpoint yang sudah ada dapat membuka ikon", o: ["print", "save", "close", "open"], a: "d"},
+        {q: "Untuk mengtur rata kiri teks menggunakan….", o: ["CTRL + A", "CTRL + E", "CTRL + L", "CTRL + J"], a: "c"},
+        {q: "Untuk mengatur rata tengah teks menggunakan….", o: ["CTRL + A", "CTRL + E", "CTRL + L", "CTRL + J"], a: "b"},
+        {q: "Untuk mengatur rata kanan teks menggunakan….", o: ["CTRL + R", "CTRL + E", "CTRL + L", "CTRL + J"], a: "a"},
+        {q: "Untuk mengatur rata kanan kiri teks menggunakan….", o: ["CTRL + R", "CTRL + E", "CTRL + L", "CTRL + J"], a: "d"},
+        {q: "Untuk menebalkan teks menggunakan….", o: ["CTRL + B", "CTRL + I", "CTRL + U", "CTRL + P"], a: "a"},
+        {q: "Untuk memiringkan teks menggunakan….", o: ["CTRL + B", "CTRL + I", "CTRL + U", "CTRL + P"], a: "b"},
+        {q: "Untuk memberi garis bawah teks menggunakan….", o: ["CTRL + B", "CTRL + I", "CTRL + U", "CTRL + P"], a: "c"},
+        {q: "Langkah-langkah untuk memberikan background pada slide presentasi adalah…", o: ["Insert – picture", "Design – background styles", "Insert – media clip", "Animation – preview"], a: "b"},
+        {q: "Agar lebih menarik slide presentasi dapat diberikan themes, langkahnya…", o: ["Design – themes", "Insert – themes", "Home – themes", "Animations – themes"], a: "a"},
+        {q: "Pilihan yang digunakan untuk mengulang animasi secara terus menerus adalah...", o: ["Until end of slide", "On click", "With previous", "After previous"], a: "a"},
+        {q: "Menu yang digunakan untuk menyisipkan video ke dalam slide adalah...", o: ["Insert - Movie", "Insert - Picture", "Insert - Chart", "Insert - Table"], a: "a"},
+        {q: "Efek animasi perpindahan antar slide disebut...", o: ["Custom Animation", "Slide Transition", "Animation Schemes", "Entrance Effect"], a: "b"},
+        {q: "Tombol shortcut untuk membuat slide baru adalah...", o: ["Ctrl + N", "Ctrl + M", "Ctrl + S", "Ctrl + O"], a: "b"}
+    ];
+
+    function startQuiz() {
+        const input = document.getElementById('userNameInput').value.trim();
+        if(input === "") { alert("Mohon masukkan nama Anda!"); return; }
+        pesertaName = input;
+        document.getElementById('login-overlay').style.display = 'none';
+        document.getElementById('displayUserName').textContent = "PESERTA: " + pesertaName.toUpperCase();
+    }
+
+    function shuffle(a) { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+    const questions = shuffle([...rawQuestions]);
+    let currentIdx = 0;
+    const cont = document.getElementById('soalContainer');
+    const grid = document.getElementById('gridNav');
+
+    questions.forEach((s, i) => {
+        const div = document.createElement('div');
+        div.className = `q-wrapper ${i === 0 ? 'active' : ''}`;
+        div.id = `q${i}`;
+        let optHtml = '';
+        s.o.forEach((opt, idx) => {
+            const code = String.fromCharCode(97 + idx);
+            optHtml += `<label><input type="radio" name="ans${i}" value="${code}" onclick="handleAutoNext(${i})">${code.toUpperCase()}. ${opt}</label>`;
+        });
+        div.innerHTML = `<div class="q-text">${i + 1}. ${s.q}</div><div class="options">${optHtml}</div>`;
+        cont.appendChild(div);
+        const btn = document.createElement('button');
+        btn.id = `nav${i}`; btn.textContent = i + 1;
+        btn.onclick = () => jump(i);
+        grid.appendChild(btn);
+    });
+
+    function jump(idx) {
+        document.querySelector('.q-wrapper.active').classList.remove('active');
+        document.getElementById(`q${idx}`).classList.add('active');
+        currentIdx = idx; updateUI(); window.scrollTo(0,0);
+    }
+    function move(step) { let t = currentIdx + step; if(t >= 0 && t < questions.length) jump(t); }
+    function handleAutoNext(idx) { document.getElementById(`nav${idx}`).classList.add('done'); if(idx < questions.length - 1) setTimeout(() => move(1), 400); }
+    function updateUI() {
+        document.querySelectorAll('.nav-grid button').forEach(b => b.classList.remove('current'));
+        document.getElementById(`nav${currentIdx}`).classList.add('current');
+        document.getElementById('prevBtn').disabled = currentIdx === 0;
+        const nBtn = document.getElementById('nextBtn');
+        if(currentIdx === questions.length - 1) { nBtn.textContent = 'SELESAI'; nBtn.onclick = finish; }
+        else { nBtn.textContent = 'LANJUT'; nBtn.onclick = () => move(1); }
+    }
+
+    function finish() {
+        let benar = 0; const rekap = document.getElementById('rekapBody'); rekap.innerHTML = '';
+        questions.forEach((s, i) => {
+            const sel = document.querySelector(`input[name="ans${i}"]:checked`);
+            const uAnsVal = sel ? sel.value : null;
+            const uAnsText = sel ? s.o[uAnsVal.charCodeAt(0) - 97] : "Tidak Dijawab";
+            const cAnsText = s.o[s.a.charCodeAt(0) - 97];
+            const isC = uAnsVal === s.a; if(isC) benar++;
+            rekap.innerHTML += `<tr><td style="text-align:center">${i+1}</td><td><strong>${s.q}</strong><br><span style="color: ${isC ? 'green' : 'red'}">Jawaban Anda: ${uAnsText}</span><br><span style="color: black">Kunci: ${cAnsText}</span></td><td style="text-align:center" class="${isC?'status-benar':'status-salah'}">${isC?'BENAR':'SALAH'}</td></tr>`;
+        });
+        document.getElementById('scoreText').textContent = ((benar / questions.length) * 100).toFixed(1);
+        document.getElementById('soalContainer').style.display = 'none';
+        document.getElementById('navFooter').style.display = 'none';
+        document.getElementById('result-area').style.display = 'block';
+        window.scrollTo(0,0);
+    }
+
+    async function downloadPDF() {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+        doc.setFontSize(16);
+        doc.text("HASIL SIMULASI CAT POWERPOINT", 105, 15, { align: "center" });
+        doc.setFontSize(10);
+        doc.text("Nama Peserta: " + pesertaName.toUpperCase(), 105, 23, { align: "center" });
+        doc.text("Skor Akhir: " + document.getElementById('scoreText').textContent, 105, 28, { align: "center" });
+        
+        const rows = [];
+        questions.forEach((s, i) => {
+            const sel = document.querySelector(`input[name="ans${i}"]:checked`);
+            const uAnsVal = sel ? sel.value : null;
+            const uAnsText = sel ? s.o[uAnsVal.charCodeAt(0) - 97] : "-";
+            const cAnsText = s.o[s.a.charCodeAt(0) - 97];
+            rows.push([i+1, s.q + "\nJawab: " + uAnsText + " | Kunci: " + cAnsText, uAnsVal === s.a ? "BENAR" : "SALAH"]);
+        });
+
+        doc.autoTable({
+            head: [['No', 'Pertanyaan & Jawaban', 'Status']],
+            body: rows, startY: 35, theme: 'grid', headStyles: { fillColor: [0, 0, 0] },
+            columnStyles: { 0: { cellWidth: 10 }, 2: { cellWidth: 20 } }
+        });
+        doc.save("CAT_PowerPoint_" + pesertaName + ".pdf");
+    }
+    updateUI();
+</script>
+</body>
+</html>

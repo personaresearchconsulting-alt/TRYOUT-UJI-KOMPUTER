@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SIMULASI TKK POLRI (PPT & INTERNET MIX) - Persona Research & Consulting</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+    <style>
+        :root { --gold: #D4AF37; --ivory: #FFFFF0; --black: #000000; }
+        * { box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Arial, sans-serif; background: var(--ivory); color: var(--black); margin: 0; padding: 10px; line-height: 1.4; display: flex; flex-direction: column; min-height: 100vh; user-select: none; }
+        
+        .container { max-width: 900px; background: white; margin: auto; padding: 15px; border-radius: 10px; border-top: 8px solid var(--black); box-shadow: 0 4px 15px rgba(0,0,0,0.1); flex: 1; display: flex; flex-direction: column; }
+        
+        .header { text-align: center; border-bottom: 2px solid var(--gold); margin-bottom: 15px; padding-bottom: 10px; }
+        .header h2 { margin: 0; font-size: 1.3em; font-weight: 900; text-transform: uppercase; color: var(--black); }
+        
+        #login-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--black); display: flex; align-items: center; justify-content: center; z-index: 9999; }
+        .login-box { background: white; padding: 30px; border-radius: 12px; text-align: center; border-top: 5px solid var(--gold); width: 90%; max-width: 450px; }
+        .login-box input { width: 100%; padding: 12px; margin: 15px 0; border: 2px solid #ddd; border-radius: 6px; font-size: 1em; text-align: center; }
+
+        .q-wrapper { display: none; width: 100%; }
+        .q-wrapper.active { display: block; animation: fadeIn 0.3s; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        
+        .q-text { color: var(--black); font-weight: bold; font-size: 1.1em; margin-bottom: 20px; border-left: 5px solid var(--gold); padding-left: 15px; min-height: 50px; }
+        .options { display: grid; gap: 10px; }
+        .options label { display: flex; align-items: center; padding: 12px; background: #f9f9f9; border: 1px solid #ddd; border-radius: 8px; cursor: pointer; transition: 0.2s; }
+        .options label:hover { background: #fff9e6; border-color: var(--gold); }
+        .options input { margin-right: 15px; transform: scale(1.3); accent-color: var(--black); }
+
+        .nav-footer { margin-top: 30px; padding-top: 15px; border-top: 1px solid #eee; }
+        .nav-grid { display: grid; grid-template-columns: repeat(10, 1fr); gap: 4px; margin-bottom: 15px; }
+        .nav-grid button { padding: 8px 0; font-size: 0.7em; border: 1px solid #ccc; background: white; cursor: pointer; border-radius: 4px; }
+        .nav-grid button.done { background: var(--black); color: white; border-color: var(--black); }
+        .nav-grid button.current { border: 2px solid var(--gold); font-weight: bold; }
+
+        .btn-action { background: var(--black); color: white; border: none; padding: 12px 25px; font-weight: bold; cursor: pointer; border-radius: 6px; transition: 0.3s; margin: 5px; }
+        .btn-action:hover { background: var(--gold); }
+        .btn-download { background: #28a745; }
+
+        #result-area { display: none; text-align: center; padding: 20px 0; }
+        .score-val { font-size: 5em; font-weight: bold; color: var(--black); }
+        
+        .rekap-table { width: 100%; border-collapse: collapse; margin-top: 25px; font-size: 0.85em; }
+        .rekap-table th, .rekap-table td { border: 1px solid #ddd; padding: 12px; text-align: left; }
+        .rekap-table th { background: #333; color: white; text-align: center; }
+        .status-benar { color: #28a745; font-weight: bold; }
+        .status-salah { color: #dc3545; font-weight: bold; }
+
+        .page-footer { text-align: center; padding: 15px; font-size: 0.9em; font-weight: bold; color: #555; }
+        @media (max-width: 600px) { .nav-grid { grid-template-columns: repeat(5, 1fr); } }
+    </style>
+</head>
+<body oncontextmenu="return false" oncopy="return false" oncut="return false" onkeydown="return (event.keyCode != 123)">
+
+<div id="login-overlay">
+    <div class="login-box">
+        <h2 style="margin-top:0;">SIMULASI TKK POLRI (PAKET C)</h2>
+        <p style="color: #666;">PowerPoint & Pengetahuan Internet (100 Soal Mix)</p>
+        <input type="text" id="userNameInput" placeholder="Nama Lengkap Peserta..." autocomplete="off">
+        <button class="btn-action" style="width:100%" onclick="startQuiz()">MULAI SIMULASI</button>
+    </div>
+</div>
+
+<div class="container">
+    <div class="header">
+        <h2>PERSONA RESEARCH & CONSULTING</h2>
+        <div style="font-weight: bold; color: var(--gold);">SIMULASI MIX: PPT, INTERNET & HARDWARE</div>
+    </div>
+
+    <form id="quizForm">
+        <div id="soalContainer"></div>
+        
+        <div id="result-area">
+            <h3 id="displayUserName" style="color:var(--gold); margin-bottom:5px;"></h3>
+            <h2 style="margin:0;">HASIL SIMULASI</h2>
+            <div class="score-val" id="scoreText">0</div>
+            <p id="gradeMsg" style="font-weight: bold;"></p>
+            
+            <button type="button" class="btn-action btn-download" onclick="downloadPDF()">DOWNLOAD PDF HASIL</button>
+            <button type="button" class="btn-action" onclick="location.reload()">ULANGI TES</button>
+
+            <div style="overflow-x: auto;">
+                <table class="rekap-table" id="tableRekap">
+                    <thead>
+                        <tr>
+                            <th>No</th>
+                            <th>Pertanyaan & Kunci Jawaban</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="rekapBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </form>
+
+    <div class="nav-footer" id="navFooter">
+        <div style="display: flex; justify-content: space-between; margin-bottom: 20px;">
+            <button class="btn-action" id="prevBtn" onclick="move(-1)" disabled>KEMBALI</button>
+            <span id="pageInfo" style="font-weight: bold; align-self: center;">Soal 1 / 100</span>
+            <button class="btn-action" id="nextBtn" onclick="move(1)">LANJUT</button>
+        </div>
+        <div class="nav-grid" id="gridNav"></div>
+    </div>
+</div>
+
+<footer class="page-footer">
+    Persona Research & Consulting | WA: 0877 4251 5786
+</footer>
+
+<script>
+    let pesertaName = "";
+    // DATA 100 SOAL MIX (PPT, INTERNET, HARDWARE, OS)
+    let questions = [
+        // POWERPOINT (25 SOAL)
+        {q: "Shortcut untuk menjalankan slide show dari slide pertama adalah...", o: ["F1", "F5", "Shift + F5", "Ctrl + P", "Alt + F5"], a: "F5"},
+        {q: "Ekstensi file standar untuk Microsoft PowerPoint 2007 ke atas adalah...", o: [".ppt", ".pptx", ".ppsx", ".potx", ".pdf"], a: ".pptx"},
+        {q: "Fitur untuk mengatur perpindahan antar slide disebut...", o: ["Animation", "Transition", "Design", "Slide Show", "Layout"], a: "Transition"},
+        {q: "Fitur untuk memberikan efek gerak pada objek di dalam slide disebut...", o: ["Transition", "Animation", "Design", "Format", "Insert"], a: "Animation"},
+        {q: "Untuk menjalankan slide show dari slide yang sedang aktif, shortcutnya adalah...", o: ["F5", "Shift + F5", "Ctrl + F5", "Alt + F5", "F11"], a: "Shift + F5"},
+        {q: "Lembar kerja pada Microsoft PowerPoint disebut...", o: ["Document", "Worksheet", "Slide", "Page", "Frame"], a: "Slide"},
+        {q: "Menu untuk mengubah tema atau latar belakang slide adalah...", o: ["Home", "Insert", "Design", "Transitions", "View"], a: "Design"},
+        {q: "Fitur 'Slide Master' digunakan untuk...", o: ["Membuat animasi", "Mengatur tata letak standar untuk seluruh slide", "Menghapus slide", "Mencetak slide", "Menyimpan file"], a: "Mengatur tata letak standar untuk seluruh slide"},
+        {q: "Shortcut untuk membuat slide baru adalah...", o: ["Ctrl + N", "Ctrl + M", "Ctrl + S", "Ctrl + O", "Ctrl + P"], a: "Ctrl + M"},
+        {q: "Untuk menghentikan slide show yang sedang berjalan, kita menekan tombol...", o: ["Enter", "Space", "Esc", "Tab", "Shift"], a: "Esc"},
+        {q: "Format file PowerPoint yang langsung terbuka sebagai slide show adalah...", o: [".pptx", ".ppsx", ".potx", ".pptm", ".pdf"], a: ".ppsx"},
+        {q: "Shortcut untuk menduplikasi slide adalah...", o: ["Ctrl + C", "Ctrl + V", "Ctrl + D", "Ctrl + X", "Ctrl + M"], a: "Ctrl + D"},
+        {q: "Fitur 'Handouts' pada menu Print digunakan untuk...", o: ["Mencetak satu slide per halaman", "Mencetak beberapa slide dalam satu lembar kertas", "Mencetak hanya teks", "Menyimpan sebagai gambar", "Mengirim slide lewat email"], a: "Mencetak beberapa slide dalam satu lembar kertas"},
+        {q: "Ikon 'Rehearse Timings' digunakan untuk...", o: ["Mengatur suara", "Merekam waktu presentasi", "Membuat animasi baru", "Menghapus slide", "Mengubah tema"], a: "Merekam waktu presentasi"},
+        {q: "Menu 'Custom Slide Show' berfungsi untuk...", o: ["Membuat slide baru", "Menampilkan slide tertentu saja dalam urutan khusus", "Menghapus slide", "Mengatur animasi", "Mengubah warna"], a: "Menampilkan slide tertentu saja dalam urutan khusus"},
+        {q: "Untuk menyisipkan video ke dalam slide, kita menggunakan tab...", o: ["Home", "Insert", "Design", "Animations", "Slide Show"], a: "Insert"},
+        {q: "Shortcut Ctrl + K pada PowerPoint digunakan untuk...", o: ["Mencetak", "Menyisipkan Hyperlink", "Menghapus slide", "Mendaur ulang slide", "Menebalkan teks"], a: "Menyisipkan Hyperlink"},
+        {q: "Fitur 'Triggers' pada animasi berfungsi untuk...", o: ["Menghapus animasi", "Menjalankan animasi saat objek tertentu diklik", "Mempercepat gerakan", "Mengulang animasi", "Memberi suara"], a: "Menjalankan animasi saat objek tertentu diklik"},
+        {q: "Pilihan 'Loop continuously until Esc' pada Slide Show berfungsi untuk...", o: ["Menjalankan slide sekali", "Mengulang slide terus menerus sampai ditekan Esc", "Menampilkan slide secara acak", "Menyembunyikan slide", "Mencetak slide"], a: "Mengulang slide terus menerus sampai ditekan Esc"},
+        {q: "Untuk menyisipkan nomor slide otomatis, gunakan menu...", o: ["Design - Slide Number", "Insert - Slide Number", "View - Slide Number", "Slide Show - Setup", "Home - Numbering"], a: "Insert - Slide Number"},
+        {q: "Shortcut Ctrl + P saat Slide Show sedang berjalan akan memunculkan...", o: ["Menu cetak", "Pointer Pena (Pen)", "Slide baru", "Layar hitam", "Layar putih"], a: "Pointer Pena (Pen)"},
+        {q: "Efek animasi 'Entrance' ditandai dengan ikon berwarna...", o: ["Merah", "Kuning", "Hijau", "Biru", "Ungu"], a: "Hijau"},
+        {q: "Efek animasi 'Exit' ditandai dengan ikon berwarna...", o: ["Hijau", "Kuning", "Merah", "Biru", "Putih"], a: "Merah"},
+        {q: "Tab menu 'Review' digunakan untuk...", o: ["Membuat animasi", "Pengecekan ejaan (Spelling)", "Mengatur transisi", "Mengatur tema", "Menampilkan slide"], a: "Pengecekan ejaan (Spelling)"},
+        {q: "Shortcut Ctrl + B pada teks PowerPoint berfungsi untuk...", o: ["Miringkan", "Tebalkan", "Garis bawah", "Rata tengah", "Warna biru"], a: "Tebalkan"},
+
+        // INTERNET (25 SOAL)
+        {q: "WWW singkatan dari...", o: ["World Wide Web", "World Wide Wave", "Web Wide World", "World Website Web", "Web World Wide"], a: "World Wide Web"},
+        {q: "Protokol standar yang digunakan untuk mengakses halaman web adalah...", o: ["FTP", "SMTP", "HTTP", "POP3", "IMAP"], a: "HTTP"},
+        {q: "Program aplikasi yang digunakan untuk menjelajahi internet disebut...", o: ["Browser", "Server", "Search Engine", "URL", "ISP"], a: "Browser"},
+        {q: "Manakah yang merupakan contoh Search Engine (Mesin Pencari)?", o: ["Google Chrome", "Mozilla Firefox", "Google.com", "Internet Explorer", "Safari"], a: "Google.com"},
+        {q: "Alamat unik sebuah halaman web disebut...", o: ["IP Address", "URL", "Domain", "HTTP", "Hosting"], a: "URL"},
+        {q: "Simbol yang digunakan dalam alamat email untuk memisahkan nama pengguna dan domain adalah...", o: ["#", "&", "@", "*", "$"], a: "@"},
+        {q: "Fitur 'CC' dalam pengiriman email singkatan dari...", o: ["Clear Copy", "Carbon Copy", "Correct Copy", "Cloud Copy", "Client Copy"], a: "Carbon Copy"},
+        {q: "Fitur 'BCC' dalam email digunakan agar...", o: ["Penerima tidak bisa membalas", "Penerima lain tidak melihat alamat email tersebut", "Email terkirim lebih cepat", "Email dianggap penting", "Email terkirim ke folder Spam"], a: "Penerima lain tidak melihat alamat email tersebut"},
+        {q: "Istilah untuk mengunduh data dari internet ke komputer kita adalah...", o: ["Upload", "Update", "Download", "Upgrade", "Install"], a: "Download"},
+        {q: "Istilah untuk mengirim data dari komputer kita ke internet adalah...", o: ["Download", "Upload", "Browsing", "Surfing", "Chatting"], a: "Upload"},
+        {q: "Perangkat yang berfungsi mengubah sinyal digital menjadi analog dan sebaliknya adalah...", o: ["Router", "Switch", "Modem", "Hub", "Repeater"], a: "Modem"},
+        {q: "Kumpulan komputer yang saling terhubung dalam skala dunia disebut...", o: ["Intranet", "LAN", "Internet", "MAN", "PAN"], a: "Internet"},
+        {q: "HTTP yang lebih aman karena menggunakan enkripsi data disebut...", o: ["HTTP Security", "HTTPS", "HTTP Pro", "HTTP Private", "HTTP Lock"], a: "HTTPS"},
+        {q: "Istilah 'Spam' dalam email merujuk pada...", o: ["Email penting", "Email masuk", "Email sampah/iklan tidak diinginkan", "Email terkirim", "Email draf"], a: "Email sampah/iklan tidak diinginkan"},
+        {q: "Domain yang digunakan khusus untuk organisasi pemerintah di Indonesia adalah...", o: [".com", ".net", ".go.id", ".ac.id", ".org"], a: ".go.id"},
+        {q: "Domain yang digunakan untuk institusi pendidikan tinggi adalah...", o: [".sch.id", ".ac.id", ".co.id", ".or.id", ".com"], a: ".ac.id"},
+        {q: "Istilah 'Browsing' artinya...", o: ["Mengirim pesan", "Menjelajah internet", "Mengunduh lagu", "Bermain game online", "Mematikan komputer"], a: "Menjelajah internet"},
+        {q: "Google Chrome, Opera, dan Safari termasuk dalam kelompok...", o: ["Sistem Operasi", "Web Browser", "Antivirus", "Search Engine", "Hardware"], a: "Web Browser"},
+        {q: "Upaya mencuri informasi pribadi seperti password dengan menyamar sebagai pihak resmi disebut...", o: ["Hacking", "Phishing", "Spamming", "Cracking", "Browsing"], a: "Phishing"},
+        {q: "Software yang dibuat untuk merusak atau menyusup ke sistem komputer disebut...", o: ["Freeware", "Malware", "Shareware", "Firmware", "Hardware"], a: "Malware"},
+        {q: "Kepanjangan dari ISP adalah...", o: ["Internet System Provider", "Internet Service Provider", "Internal Service Provider", "International Service Provider", "Internet Search Provider"], a: "Internet Service Provider"},
+        {q: "Fitur 'History' pada browser berfungsi untuk...", o: ["Menghapus virus", "Melihat daftar situs yang pernah dikunjungi", "Menyimpan password", "Mempercepat koneksi", "Mengunduh gambar"], a: "Melihat daftar situs yang pernah dikunjungi"},
+        {q: "Fitur 'Bookmark' pada browser digunakan untuk...", o: ["Menghapus riwayat", "Menandai situs favorit agar mudah diakses kembali", "Mengirim email", "Memblokir iklan", "Mencetak halaman"], a: "Menandai situs favorit agar mudah diakses kembali"},
+        {q: "Istilah 'Bandwidth' merujuk pada...", o: ["Harga internet", "Kapasitas maksimal pengiriman data dalam waktu tertentu", "Merk kabel", "Jenis komputer", "Nama browser"], a: "Kapasitas maksimal pengiriman data dalam waktu tertentu"},
+        {q: "Manakah yang merupakan layanan surat elektronik milik Google?", o: ["Yahoo Mail", "Outlook", "Gmail", "iCloud Mail", "AOL Mail"], a: "Gmail"},
+
+        // HARDWARE (25 SOAL)
+        {q: "Perangkat keras yang dikenal sebagai 'otak' dari komputer adalah...", o: ["RAM", "Monitor", "CPU", "Harddisk", "Power Supply"], a: "CPU"},
+        {q: "Manakah di bawah ini yang termasuk perangkat input (masukan)?", o: ["Monitor", "Speaker", "Keyboard", "Printer", "Projector"], a: "Keyboard"},
+        {q: "Manakah di bawah ini yang termasuk perangkat output (keluaran)?", o: ["Mouse", "Scanner", "Microphone", "Monitor", "Webcam"], a: "Monitor"},
+        {q: "Media penyimpanan data yang bersifat permanen di dalam komputer adalah...", o: ["RAM", "ROM", "Harddisk", "Processor", "VGA Card"], a: "Harddisk"},
+        {q: "Perangkat keras yang berfungsi untuk mencetak dokumen adalah...", o: ["Scanner", "Printer", "Plotter", "Monitor", "Speaker"], a: "Printer"},
+        {q: "Memori penyimpanan sementara yang digunakan saat komputer menyala adalah...", o: ["Harddisk", "SSD", "RAM", "Flashdisk", "CD-ROM"], a: "RAM"},
+        {q: "Perangkat keras yang digunakan untuk menggerakkan kursor di layar adalah...", o: ["Keyboard", "Mouse", "Joystick", "Touchpad", "Semua Benar"], a: "Semua Benar"},
+        {q: "Perangkat yang digunakan untuk mengubah dokumen fisik menjadi digital adalah...", o: ["Printer", "Scanner", "Modem", "Projector", "Speaker"], a: "Scanner"},
+        {q: "Papan induk yang menjadi tempat terpasangnya berbagai komponen komputer disebut...", o: ["Keyboard", "Motherboard", "Sound Card", "Power Supply", "Harddisk"], a: "Motherboard"},
+        {q: "Satuan kecepatan Processor adalah...", o: ["Byte", "Hertz (Hz)", "Pixel", "Dot Per Inch", "Bit"], a: "Hertz (Hz)"},
+        {q: "Manakah yang merupakan media penyimpanan modern yang lebih cepat dari Harddisk?", o: ["Floppy Disk", "SSD", "CD", "Pita Magnetik", "SD Card"], a: "SSD"},
+        {q: "Perangkat keras untuk mengolah grafis dan tampilan di layar monitor adalah...", o: ["Sound Card", "VGA Card", "LAN Card", "Motherboard", "RAM"], a: "VGA Card"},
+        {q: "Komponen yang mensuplai listrik ke seluruh bagian komputer adalah...", o: ["Stabilizer", "UPS", "Power Supply", "Battery", "Capacitor"], a: "Power Supply"},
+        {q: "Perangkat input yang digunakan untuk memasukkan suara ke komputer adalah...", o: ["Speaker", "Headset", "Microphone", "Sound Card", "Joystick"], a: "Microphone"},
+        {q: "Perangkat keras untuk menghubungkan komputer ke jaringan kabel LAN adalah...", o: ["VGA Card", "Sound Card", "Ethernet/LAN Card", "Modem", "Wi-Fi Card"], a: "Ethernet/LAN Card"},
+        {q: "Layar sentuh (Touchscreen) termasuk perangkat jenis...", o: ["Input", "Output", "Input dan Output", "Penyimpanan", "Proses"], a: "Input dan Output"},
+        {q: "Flashdisk dihubungkan ke komputer melalui port...", o: ["VGA", "HDMI", "USB", "LAN", "Audio"], a: "USB"},
+        {q: "Perangkat keras yang digunakan untuk menampilkan gambar ke dinding/layar lebar adalah...", o: ["Monitor", "Projector", "Scanner", "Webcam", "VGA"], a: "Projector"},
+        {q: "Tombol pada keyboard yang berfungsi untuk menghapus satu karakter di sebelah kiri kursor adalah...", o: ["Delete", "Backspace", "Enter", "Space", "Shift"], a: "Backspace"},
+        {q: "Tombol pada keyboard yang berfungsi untuk membuat huruf kapital semua adalah...", o: ["Shift", "Tab", "Caps Lock", "Alt", "Ctrl"], a: "Caps Lock"},
+        {q: "Alat yang digunakan untuk melindungi komputer dari mati lampu mendadak adalah...", o: ["Power Supply", "UPS", "Stabilizer", "Inverter", "Accu"], a: "UPS"},
+        {q: "Manakah yang merupakan perangkat penyimpanan eksternal?", o: ["RAM", "SSD Internal", "Harddisk Eksternal", "Cache Memory", "ROM"], a: "Harddisk Eksternal"},
+        {q: "Perangkat yang berfungsi mengeluarkan suara dari komputer adalah...", o: ["Speaker", "Monitor", "Printer", "Plotter", "Modem"], a: "Speaker"},
+        {q: "Keyboard dan Mouse nirkabel terhubung menggunakan teknologi...", o: ["Kabel USB", "Bluetooth / Radio Frequency", "Inframerah", "Wi-Fi", "Satelit"], a: "Bluetooth / Radio Frequency"},
+        {q: "Istilah 'Hardware' dalam bahasa Indonesia disebut...", o: ["Perangkat Lunak", "Perangkat Keras", "Perangkat Desa", "Perangkat Otak", "Perangkat Tambahan"], a: "Perangkat Keras"},
+
+        // OS & UMUM (25 SOAL)
+        {q: "Software utama yang mengelola seluruh sumber daya komputer disebut...", o: ["Browser", "Sistem Operasi (OS)", "Antivirus", "Compiler", "Driver"], a: "Sistem Operasi (OS)"},
+        {q: "Manakah yang merupakan contoh Sistem Operasi?", o: ["Microsoft Word", "Google Chrome", "Windows 10", "Adobe Photoshop", "VLC Player"], a: "Windows 10"},
+        {q: "Tampilan awal saat menyalakan komputer berbasis Windows disebut...", o: ["Start Menu", "Taskbar", "Desktop", "Wallpaper", "Explorer"], a: "Desktop"},
+        {q: "Proses menyalakan kembali komputer dari keadaan hidup disebut...", o: ["Shut Down", "Sleep", "Restart", "Hibernate", "Log Off"], a: "Restart"},
+        {q: "Software yang berfungsi melindungi komputer dari virus adalah...", o: ["Firewall", "Antivirus", "Browser", "Utility", "Operating System"], a: "Antivirus"},
+        {q: "Tempat penyimpanan sementara file yang baru dihapus sebelum benar-benar hilang adalah...", o: ["My Documents", "Control Panel", "Recycle Bin", "Desktop", "Taskbar"], a: "Recycle Bin"},
+        {q: "Shortcut untuk menyalin (Copy) objek atau teks adalah...", o: ["Ctrl + X", "Ctrl + C", "Ctrl + V", "Ctrl + Z", "Ctrl + A"], a: "Ctrl + C"},
+        {q: "Shortcut untuk menempelkan (Paste) objek yang sudah disalin adalah...", o: ["Ctrl + P", "Ctrl + V", "Ctrl + S", "Ctrl + C", "Ctrl + N"], a: "Ctrl + V"},
+        {q: "Shortcut untuk memotong (Cut) objek adalah...", o: ["Ctrl + C", "Ctrl + V", "Ctrl + X", "Ctrl + Z", "Ctrl + Y"], a: "Ctrl + X"},
+        {q: "Shortcut 'Alt + F4' berfungsi untuk...", o: ["Menyimpan file", "Menutup aplikasi yang sedang aktif", "Menghapus file", "Membuka file baru", "Restart komputer"], a: "Menutup aplikasi yang sedang aktif"},
+        {q: "Sistem operasi yang dikembangkan oleh Apple untuk komputernya adalah...", o: ["Windows", "Android", "Linux", "macOS", "Unix"], a: "macOS"},
+        {q: "Sistem operasi bersifat 'Open Source' yang logonya seekor pinguin adalah...", o: ["Windows", "Linux", "Solaris", "FreeBSD", "ChromeOS"], a: "Linux"},
+        {q: "Bagian Windows yang berisi daftar program dan tombol power adalah...", o: ["Desktop", "Taskbar", "Start Menu", "System Tray", "File Explorer"], a: "Start Menu"},
+        {q: "Aplikasi bawaan Windows untuk mengelola file dan folder adalah...", o: ["Windows Media Player", "File Explorer", "Notepad", "Paint", "Calculator"], a: "File Explorer"},
+        {q: "Ekstensi file untuk gambar biasanya adalah...", o: [".mp3", ".docx", ".jpg", ".exe", ".pdf"], a: ".jpg"},
+        {q: "Ekstensi file untuk program yang dapat dieksekusi/diinstall adalah...", o: [".txt", ".zip", ".exe", ".xlsx", ".mp4"], a: ".exe"},
+        {q: "Kumpulan dari beberapa file yang disimpan bersama dalam satu wadah disebut...", o: ["Icon", "Folder", "Shortcut", "Drive", "Desktop"], a: "Folder"},
+        {q: "Untuk menghapus file secara permanen tanpa masuk Recycle Bin, shortcutnya...", o: ["Delete", "Shift + Delete", "Ctrl + Delete", "Alt + Delete", "Space + Delete"], a: "Shift + Delete"},
+        {q: "Pencipta Microsoft yang merupakan salah satu orang terkaya di dunia adalah...", o: ["Steve Jobs", "Bill Gates", "Mark Zuckerberg", "Jeff Bezos", "Elon Musk"], a: "Bill Gates"},
+        {q: "Istilah 'Cold Booting' artinya...", o: ["Menyalakan komputer dari posisi mati", "Menyalakan komputer dari posisi hang", "Mematikan komputer", "Membersihkan komputer", "Mendinginkan processor"], a: "Menyalakan komputer dari posisi mati"},
+        {q: "Untuk mengambil tangkapan layar (screenshot) di Windows, tekan tombol...", o: ["Home", "End", "Print Screen (PrtSc)", "Insert", "Scroll Lock"], a: "Print Screen (PrtSc)"},
+        {q: "Software yang dibagikan gratis namun dalam jangka waktu tertentu disebut...", o: ["Freeware", "Shareware", "Adware", "Open Source", "Commercial"], a: "Shareware"},
+        {q: "Satuan terkecil data dalam komputer adalah...", o: ["Byte", "Bit", "KB", "MB", "GB"], a: "Bit"},
+        {q: "1 Kilobyte (KB) setara dengan...", o: ["100 Byte", "1000 Byte", "1024 Byte", "1042 Byte", "1000 Bit"], a: "1024 Byte"},
+        {q: "Brainware dalam sistem komputer merujuk pada...", o: ["Monitor", "Windows", "Manusia/Pengguna", "Processor", "Kabel"], a: "Manusia/Pengguna"}
+    ];
+
+    let currentIdx = 0;
+    const expiredDate = "2026-08-01";
+
+    function startQuiz() {
+        const today = new Date().toISOString().split('T')[0];
+        if (today > expiredDate) {
+            alert("Masa berlaku link simulasi telah berakhir.");
+            return;
+        }
+        const name = document.getElementById('userNameInput').value.trim();
+        if (!name) { alert("Masukkan nama Anda!"); return; }
+        pesertaName = name;
+        document.getElementById('login-overlay').style.display = 'none';
+        
+        // MIX & SHUFFLE
+        questions = questions.sort(() => Math.random() - 0.5);
+        questions.forEach(q => {
+            q.o = q.o.sort(() => Math.random() - 0.5);
+        });
+        
+        initQuiz();
+    }
+
+    function initQuiz() {
+        const container = document.getElementById('soalContainer');
+        const grid = document.getElementById('gridNav');
+        questions.forEach((s, i) => {
+            const div = document.createElement('div');
+            div.className = 'q-wrapper';
+            div.id = `q${i}`;
+            let optionsHtml = s.o.map((opt, idx) => {
+                const char = String.fromCharCode(97 + idx);
+                return `<label><input type="radio" name="ans${i}" value="${opt}" onchange="handelAnswer(${i})"> ${char.toUpperCase()}. ${opt}</label>`;
+            }).join('');
+            div.innerHTML = `<div class="q-text">${i+1}. ${s.q}</div><div class="options">${optionsHtml}</div>`;
+            container.appendChild(div);
+
+            const btn = document.createElement('button');
+            btn.id = `nav${i}`;
+            btn.innerText = i + 1;
+            btn.onclick = () => jump(i);
+            grid.appendChild(btn);
+        });
+        showSoal(0);
+    }
+
+    function handelAnswer(idx) {
+        document.getElementById(`nav${idx}`).classList.add('done');
+        if (currentIdx < questions.length - 1) {
+            setTimeout(() => { move(1); }, 400);
+        }
+    }
+
+    function showSoal(idx) {
+        document.querySelectorAll('.q-wrapper').forEach(el => el.classList.remove('active'));
+        document.getElementById(`q${idx}`).classList.add('active');
+        document.querySelectorAll('.nav-grid button').forEach(el => el.classList.remove('current'));
+        document.getElementById(`nav${idx}`).classList.add('current');
+        document.getElementById('prevBtn').disabled = (idx === 0);
+        document.getElementById('nextBtn').innerText = (idx === questions.length - 1) ? "SELESAI" : "LANJUT";
+        document.getElementById('pageInfo').innerText = `Soal ${idx + 1} / 100`;
+        currentIdx = idx;
+    }
+
+    function move(step) {
+        if (currentIdx === questions.length - 1 && step === 1) {
+            finishQuiz();
+            return;
+        }
+        showSoal(currentIdx + step);
+    }
+
+    function jump(idx) { showSoal(idx); }
+
+    function finishQuiz() {
+        if (!confirm("Akhiri ujian 100 soal Paket C?")) return;
+        
+        let scoreCount = 0;
+        const body = document.getElementById('rekapBody');
+        body.innerHTML = "";
+
+        questions.forEach((s, i) => {
+            const sel = document.querySelector(`input[name="ans${i}"]:checked`);
+            const uAnsText = sel ? sel.value : null;
+            const isCorrect = (uAnsText === s.a);
+            if (isCorrect) scoreCount++;
+
+            const row = body.insertRow();
+            row.innerHTML = `
+                <td style="text-align:center">${i+1}</td>
+                <td>
+                    <strong>${s.q}</strong><br>
+                    <small>Jawaban: ${uAnsText || "-"} | Kunci: ${s.a}</small>
+                </td>
+                <td style="text-align:center" class="${isCorrect ? 'status-benar' : 'status-salah'}">${isCorrect ? 'BENAR' : 'SALAH'}</td>
+            `;
+        });
+
+        document.getElementById('scoreText').innerText = scoreCount;
+        document.getElementById('displayUserName').innerText = pesertaName.toUpperCase();
+        
+        const msg = scoreCount >= 75 ? "ANDA DINYATAKAN LULUS (ASPEK PENGETAHUAN)" : "ANDA BELUM MENCAPAI NILAI STANDAR LULUS.";
+        document.getElementById('gradeMsg').innerText = msg;
+        document.getElementById('gradeMsg').style.color = scoreCount >= 75 ? "green" : "red";
+
+        document.getElementById('soalContainer').style.display = 'none';
+        document.getElementById('navFooter').style.display = 'none';
+        document.getElementById('result-area').style.display = 'block';
+        window.scrollTo(0, 0);
+    }
+
+    function downloadPDF() {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+        doc.setFontSize(18);
+        doc.text("HASIL TKK POLRI (PPT, INTERNET, HARDWARE)", 105, 20, { align: "center" });
+        doc.setFontSize(12);
+        doc.text("Nama: " + pesertaName.toUpperCase() + " | Skor: " + document.getElementById('scoreText').textContent, 105, 30, { align: "center" });
+        
+        const rows = [];
+        questions.forEach((s, i) => {
+            const sel = document.querySelector(`input[name="ans${i}"]:checked`);
+            const uAnsText = sel ? sel.value : "-";
+            rows.push([i+1, s.q + "\nJawaban: " + uAnsText + " | Kunci: " + s.a, uAnsText === s.a ? "BENAR" : "SALAH"]);
+        });
+
+        doc.autoTable({
+            startY: 40,
+            head: [['No', 'Pertanyaan & Analisis', 'Status']],
+            body: rows,
+            theme: 'striped',
+            headStyles: { fillColor: [0, 0, 0] }
+        });
+        doc.save(`TKK_PaketC_${pesertaName}.pdf`);
+    }
+</script>
+</body>
+</html>

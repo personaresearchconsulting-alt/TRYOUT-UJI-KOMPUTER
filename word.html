@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CAT MS WORD - Persona Research & Consulting</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+    <style>
+        :root { --gold: #D4AF37; --ivory: #FFFFF0; --black: #000000; }
+        * { box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Arial, sans-serif; background: var(--ivory); color: var(--black); margin: 0; padding: 10px; line-height: 1.4; display: flex; flex-direction: column; min-height: 100vh; user-select: none; -webkit-user-select: none; }
+        
+        .container { max-width: 850px; background: white; margin: auto; padding: 15px; border-radius: 10px; border-top: 6px solid var(--black); box-shadow: 0 4px 15px rgba(0,0,0,0.1); flex: 1; display: flex; flex-direction: column; }
+        
+        .header { text-align: center; border-bottom: 2px solid var(--gold); margin-bottom: 15px; padding-bottom: 10px; }
+        .header h2 { margin: 0; font-size: 1.2em; font-weight: 900; text-transform: uppercase; color: var(--black); }
+        
+        #login-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--black); display: flex; align-items: center; justify-content: center; z-index: 9999; }
+        .login-box { background: white; padding: 30px; border-radius: 12px; text-align: center; border-top: 5px solid var(--gold); width: 90%; max-width: 400px; }
+        .login-box input { width: 100%; padding: 12px; margin: 15px 0; border: 2px solid #ddd; border-radius: 6px; font-size: 1em; text-align: center; }
+
+        .q-wrapper { display: none; width: 100%; }
+        .q-wrapper.active { display: block; animation: fadeIn 0.2s; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        
+        .q-text { color: var(--black); font-weight: bold; font-size: 1.1em; margin-bottom: 15px; border-left: 4px solid var(--gold); padding-left: 10px; }
+        .options { display: grid; gap: 8px; }
+        .options label { display: flex; align-items: center; padding: 12px; background: #fefefe; border: 1px solid #ddd; border-radius: 8px; cursor: pointer; font-size: 1em; color: var(--black); transition: 0.2s; }
+        .options label:hover { background: #fff9e6; border-color: var(--gold); }
+        .options input { margin-right: 12px; transform: scale(1.3); accent-color: var(--black); }
+
+        .nav-footer { margin-top: 30px; padding-top: 15px; border-top: 1px solid #eee; }
+        .nav-grid { display: grid; grid-template-columns: repeat(10, 1fr); gap: 4px; margin-bottom: 15px; }
+        .nav-grid button { padding: 6px 0; font-size: 0.75em; border: 1px solid #ccc; background: white; cursor: pointer; border-radius: 4px; color: var(--black); }
+        .nav-grid button.done { background: var(--black); color: white; border-color: var(--black); }
+        .nav-grid button.current { border: 2px solid var(--gold); font-weight: bold; }
+
+        .btn-action { background: var(--black); color: white; border: none; padding: 12px 25px; font-weight: bold; cursor: pointer; border-radius: 6px; font-size: 1em; transition: 0.3s; margin: 5px; }
+        .btn-action:hover { background: var(--gold); color: white; }
+        .btn-download { background: #28a745; }
+
+        #result-area { display: none; text-align: center; padding: 20px 0; }
+        .score-val { font-size: 4.5em; font-weight: bold; color: var(--black); margin: 5px 0; }
+        
+        .rekap-table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 0.85em; text-align: left; }
+        .rekap-table th, .rekap-table td { border: 1px solid #ddd; padding: 10px; color: var(--black); }
+        .rekap-table th { background: #f2f2f2; text-align: center; font-weight: bold; }
+        .status-benar { color: green !important; font-weight: bold; }
+        .status-salah { color: red !important; font-weight: bold; }
+
+        .page-footer { text-align: center; padding: 15px; font-size: 0.9em; color: var(--black); font-weight: bold; }
+    </style>
+</head>
+<body oncontextmenu="return false" oncopy="return false" oncut="return false" onkeydown="return (event.keyCode != 123)">
+
+<div id="login-overlay">
+    <div class="login-box">
+        <h3 style="margin-top:0; color: var(--black);">SIMULASI CAT MS WORD</h3>
+        <p>Silakan masukkan nama peserta:</p>
+        <input type="text" id="userNameInput" placeholder="Ketik Nama Lengkap..." autocomplete="off">
+        <button class="btn-action" onclick="startQuiz()">MULAI SIMULASI</button>
+    </div>
+</div>
+
+<div class="container">
+    <div class="header">
+        <h2>PERSONA RESEARCH & CONSULTING</h2>
+        <small style="color: var(--gold); font-weight: bold; letter-spacing: 1px;">MODUL: MICROSOFT WORD (LENGKAP)</small>
+    </div>
+
+    <form id="quizForm">
+        <div id="soalContainer"></div>
+        
+        <div id="result-area">
+            <h3 id="displayUserName" style="margin-bottom:0; color:var(--gold);"></h3>
+            <h2 style="margin:0; color: var(--black);">HASIL SIMULASI</h2>
+            <div class="score-val" id="scoreText">0</div>
+            
+            <button type="button" class="btn-action btn-download" onclick="downloadPDF()">DOWNLOAD PDF PEMBAHASAN</button>
+            <button type="button" class="btn-action" onclick="location.reload()">ULANGI TES</button>
+
+            <div style="overflow-x: auto; margin-top: 20px;">
+                <table class="rekap-table" id="tableRekap">
+                    <thead>
+                        <tr>
+                            <th style="width: 50px;">No</th>
+                            <th>Pertanyaan & Pembahasan</th>
+                            <th style="width: 100px;">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="rekapBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </form>
+
+    <div class="nav-footer" id="navFooter">
+        <div style="display: flex; justify-content: space-between; margin-bottom: 15px;">
+            <button class="btn-action" id="prevBtn" onclick="move(-1)" disabled>KEMBALI</button>
+            <button class="btn-action" id="nextBtn" onclick="move(1)">LANJUT</button>
+        </div>
+        <div class="nav-grid" id="gridNav"></div>
+    </div>
+</div>
+
+<footer class="page-footer">
+    Persona Research & Consulting | WA: 0877 4251 5786
+</footer>
+
+<script>
+    let pesertaName = "";
+    let questions = [
+        {q: "Salah satu contoh system operasi dalam komputer adalah...", o: ["Windows", "Monitor", "Ms-word", "Speaker", "Keyboard"], a: "a"},
+        {q: "Program aplikasi yang digunakan untuk pengolahan kata disebut….", o: ["wordart", "microsoft excel", "wordpard", "microsoft word", "power point"], a: "d"},
+        {q: "Perintah untuk membuat presentasi baru adalah…", o: ["File-open", "Edit-new", "File-new", "Edit-save", "New-edit"], a: "c"},
+        {q: "Page setup berfungsi untuk…", o: ["mengatur halaman", "mencetak kertas", "keluar dari tampilan", "membuka lembar kerja", "memprint data"], a: "a"},
+        {q: "Insert-new slide berfungsi untuk…", o: ["menyisipkan slide baru", "menutupkan slide", "menyisipkan gambar", "mengatur halaman", "menyisipkan halaman"], a: "a"},
+        {q: "Untuk mengatur tulisan adalah...", o: ["format – font", "insert – font", "file – new", "edit- open", "format- tulisan"], a: "a"},
+        {q: "Jenis perancangan presentasi baru yang masih kosong disebut…", o: ["autoconten wizard", "blank presentation", "desain template", "open existing presentation", "virgin presentation"], a: "b"},
+        {q: "Baris yang berisi nama program dan nama file yang sedang aktif disebut..", o: ["menubar", "titlebar", "powerbar", "standarbar", "baris bar"], a: "b"},
+        {q: "Perintah untuk menyisipkan gambar adalah dari menu..", o: ["format", "insert", "file", "help", "Windows"], a: "b"},
+        {q: "Langkah-langkah yang tepat untuk menyisipkan tulisan seni dalam dokumen adalah….", o: ["Klik menu insert – picture – clip Art", "Klik menu file – picture – wordart", "Klik menu insert – wordart – picture", "Klik menu insert- picture- wordart", "Klik menu edit – picture – wordart"], a: "d"},
+        {q: "Membuat dokumen baru pada program Ms. Word dapat menggunakan perintah shortcut...", o: ["Ctrl + N", "Ctrl + O", "Ctrl + S", "Ctrl + P", "Ctrl + X"], a: "a"},
+        {q: "Extension atau format data file dokumen yang disimpan pada program Microsoft word adalah…", o: ["Html", "Doc", "Ppt", "Mdb", "Xls"], a: "b"},
+        {q: "Untuk menentukan batas atau posisi naskah pada lembar kerja, pada menu page setup dipilih…", o: ["Page size", "Margin", "Other pages", "Spacing", "Indent"], a: "b"},
+        {q: "Cara membuat file atau dokumen baru pada program Microsoft Word 2007 adalah …", o: ["Office Button – New – Blank Dokumen", "Office Button – New – Open", "Home – New – Blank Dokumen", "Insert – New – Blank Dokumen", "Office Button – Home – New"], a: "a"},
+        {q: "Digunakan untuk mendeteksi kesalahan penulisan dan ejaan bahasa pada kalimat adalah…", o: ["Insert", "Auto Correct", "Find", "Replace", "Editing"], a: "b"},
+        {q: "File dokumen yang diketik menggunakan Microsoft Word disimpan dalam format…", o: [".TXT", ".JPG", ".PPT", ".GIF", ".DOC"], a: "e"},
+        {q: "Merupakan bagian dari menu Page Layout dan berfungsi mempercantik Layout dokumen adalah…", o: ["Smart Art", "Theme", "Word Art", "Clip Art", "Design"], a: "b"},
+        {q: "Naskah yang terletak pada bagian bawah atau juga disebut catatan kaki disebut…", o: ["Footer", "Symbol", "Page Number", "Header", "Drop Cap"], a: "a"},
+        {q: "Bentuk variasi huruf yang diletakkan pada awal paragraf sehingga menarik disebut…", o: ["Header", "Word Art", "Quick Part", "Text Box", "Drop Cap"], a: "e"},
+        {q: "Cara untuk membuat tabel secara otomatis dengan klik…", o: ["Insert – chart", "Insert – blank page", "Home – table", "Insert – table", "Insert – table (ketik jumlah)"], a: "d"},
+        {q: "Ikon yang digunakan untuk membatalkan perintah adalah…", o: ["Redo", "Undo", "Paste", "Copy", "Cut"], a: "b"},
+        {q: "Untuk membuat teks menjadi cetak tebal (bold), shortcut yang digunakan adalah…", o: ["Ctrl + I", "Ctrl + U", "Ctrl + B", "Ctrl + Z", "Ctrl + K"], a: "c"},
+        {q: "Fungsi dari ikon Italic adalah…", o: ["Menebalkan teks", "Menggarisbawahi teks", "Memiringkan teks", "Membuat teks rata tengah", "Menghapus teks"], a: "c"},
+        {q: "Untuk mengatur paragraf agar rata kiri-kanan menggunakan…", o: ["Align Left", "Align Right", "Center", "Justify", "Line Spacing"], a: "d"},
+        {q: "Ikon yang digunakan untuk menyalin teks adalah…", o: ["Cut", "Copy", "Paste", "Save", "Print"], a: "b"},
+        {q: "Menu yang digunakan untuk menyisipkan nomor halaman adalah…", o: ["Page Layout", "Insert", "Home", "References", "View"], a: "b"},
+        {q: "Untuk merubah ukuran kertas, kita masuk ke menu…", o: ["Insert - Table", "Page Layout - Size", "Home - Font", "View - Zoom", "Mailings - Labels"], a: "b"},
+        {q: "Shortcut untuk menyimpan (Save) dokumen adalah…", o: ["Ctrl + P", "Ctrl + S", "Ctrl + C", "Ctrl + V", "Ctrl + A"], a: "b"},
+        {q: "Langkah untuk membuat pangkat atas (misal: X²) adalah...", o: ["Format - Font - Outline", "Format - Font - Small Caps", "Format - Font - Superscript", "Format - Font - Subscript", "Insert - Symbol"], a: "c"},
+        {q: "Untuk mengubah tulisan rata kiri dan kanan maka digunakan…", o: ["Align Right", "Justify", "Align Left", "Center", "Spacing"], a: "b"},
+        {q: "File yang dihasilkan MS Word adalah…", o: [".doc", ".xls", ".ppt", ".mdb", ".jpg"], a: "a"},
+        {q: "Bagaimana cara membuat teks rata kanan?", o: ["Ctrl + L", "Ctrl + J", "Ctrl + R", "Ctrl + E", "Ctrl + K"], a: "c"},
+        {q: "Bagaimana cara membuat teks rata kiri?", o: ["Ctrl + L", "Ctrl + J", "Ctrl + R", "Ctrl + E", "Ctrl + B"], a: "a"},
+        {q: "Mengatur jarak baris/spasi menggunakan menu…", o: ["Format - Line Spacing", "Edit - Line Spacing", "Format - Paragraph - Line Spacing", "Edit - Paragraph - Line Spacing", "View - Spacing"], a: "c"},
+        {q: "X²Y. angka 2 (pangkat) dapat dibuat dengan langkah…", o: ["Blok teks, Format, Font, Superscript", "Blok teks, Format, Cell, Font", "Blok teks, Format, Font, Number", "Blok teks, Format, Autoformat", "Blok teks, Insert, Symbol"], a: "a"},
+        {q: "Untuk mengubah nomor tertentu pada bullets and numbering digunakan perintah…", o: ["Customize", "None", "Bullets", "Symbol", "Format"], a: "c"}
+    ];
+
+    let currentIdx = 0;
+    const expiredDate = "2026-07-01";
+
+    function startQuiz() {
+        const today = new Date().toISOString().split('T')[0];
+        if (today > expiredDate) {
+            alert("Maaf, masa berlaku link simulasi ini telah berakhir.");
+            return;
+        }
+        const name = document.getElementById('userNameInput').value.trim();
+        if (!name) { alert("Masukkan nama Anda!"); return; }
+        pesertaName = name;
+        document.getElementById('login-overlay').style.display = 'none';
+        
+        // AUTO SHUFFLE SOAL
+        questions = questions.sort(() => Math.random() - 0.5);
+        
+        initQuiz();
+    }
+
+    function initQuiz() {
+        const container = document.getElementById('soalContainer');
+        const grid = document.getElementById('gridNav');
+        questions.forEach((s, i) => {
+            const div = document.createElement('div');
+            div.className = 'q-wrapper';
+            div.id = `q${i}`;
+            let optionsHtml = s.o.map((opt, idx) => {
+                const char = String.fromCharCode(97 + idx);
+                return `<label><input type="radio" name="ans${i}" value="${char}" onchange="handelAnswer(${i})"> ${char.toUpperCase()}. ${opt}</label>`;
+            }).join('');
+            div.innerHTML = `<div class="q-text">${i+1}. ${s.q}</div><div class="options">${optionsHtml}</div>`;
+            container.appendChild(div);
+
+            const btn = document.createElement('button');
+            btn.id = `nav${i}`;
+            btn.innerText = i + 1;
+            btn.onclick = () => jump(i);
+            grid.appendChild(btn);
+        });
+        showSoal(0);
+    }
+
+    function handelAnswer(idx) {
+        document.getElementById(`nav${idx}`).classList.add('done');
+        // AUTO NEXT
+        if (currentIdx < questions.length - 1) {
+            setTimeout(() => { move(1); }, 400);
+        }
+    }
+
+    function showSoal(idx) {
+        document.querySelectorAll('.q-wrapper').forEach(el => el.classList.remove('active'));
+        document.getElementById(`q${idx}`).classList.add('active');
+        document.querySelectorAll('.nav-grid button').forEach(el => el.classList.remove('current'));
+        document.getElementById(`nav${idx}`).classList.add('current');
+        document.getElementById('prevBtn').disabled = (idx === 0);
+        document.getElementById('nextBtn').innerText = (idx === questions.length - 1) ? "SELESAI" : "LANJUT";
+        currentIdx = idx;
+    }
+
+    function move(step) {
+        if (currentIdx === questions.length - 1 && step === 1) {
+            finishQuiz();
+            return;
+        }
+        showSoal(currentIdx + step);
+    }
+
+    function jump(idx) { showSoal(idx); }
+
+    function finishQuiz() {
+        if (!confirm("Apakah Anda yakin ingin mengakhiri simulasi?")) return;
+        
+        let scoreCount = 0;
+        const body = document.getElementById('rekapBody');
+        body.innerHTML = "";
+
+        questions.forEach((s, i) => {
+            const sel = document.querySelector(`input[name="ans${i}"]:checked`);
+            const uAnsChar = sel ? sel.value : null;
+            const isCorrect = (uAnsChar === s.a);
+            if (isCorrect) scoreCount++;
+
+            // MENGAMBIL TEKS JAWABAN (BUKAN HANYA HURUF)
+            const uAnsText = uAnsChar ? s.o[uAnsChar.charCodeAt(0) - 97] : "-";
+            const cAnsText = s.o[s.a.charCodeAt(0) - 97];
+
+            const row = body.insertRow();
+            row.innerHTML = `
+                <td style="text-align:center">${i+1}</td>
+                <td>
+                    <strong style="color:var(--black);">${s.q}</strong><br>
+                    <small>Jawaban Anda: (${uAnsChar ? uAnsChar.toUpperCase() : "-"}) ${uAnsText} | Kunci: (${s.a.toUpperCase()}) ${cAnsText}</small>
+                </td>
+                <td style="text-align:center" class="${isCorrect ? 'status-benar' : 'status-salah'}">${isCorrect ? 'BENAR' : 'SALAH'}</td>
+            `;
+        });
+
+        const finalScore = Math.round((scoreCount / questions.length) * 100);
+        document.getElementById('scoreText').innerText = finalScore;
+        document.getElementById('displayUserName').innerText = pesertaName.toUpperCase();
+        document.getElementById('soalContainer').style.display = 'none';
+        document.getElementById('navFooter').style.display = 'none';
+        document.getElementById('result-area').style.display = 'block';
+        window.scrollTo(0, 0);
+    }
+
+    function downloadPDF() {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+        doc.setFontSize(16);
+        doc.setTextColor(0,0,0);
+        doc.text("HASIL SIMULASI CAT MS WORD", 105, 15, { align: "center" });
+        doc.setFontSize(12);
+        doc.text("Nama Peserta: " + pesertaName.toUpperCase(), 105, 23, { align: "center" });
+        doc.text("Skor Akhir: " + document.getElementById('scoreText').textContent, 105, 29, { align: "center" });
+        doc.setFontSize(10);
+        doc.text("Persona Research & Consulting | WA: 0877 4251 5786", 105, 36, { align: "center" });
+        
+        const rows = [];
+        questions.forEach((s, i) => {
+            const sel = document.querySelector(`input[name="ans${i}"]:checked`);
+            const uAnsChar = sel ? sel.value : null;
+            const uAnsText = sel ? s.o[uAnsChar.charCodeAt(0) - 97] : "-";
+            const cAnsText = s.o[s.a.charCodeAt(0) - 97];
+            rows.push([i+1, s.q + "\nJawaban Anda: (" + (uAnsChar ? uAnsChar.toUpperCase() : "-") + ") " + uAnsText + "\nKunci: (" + s.a.toUpperCase() + ") " + cAnsText, uAnsChar === s.a ? "BENAR" : "SALAH"]);
+        });
+
+        doc.autoTable({
+            startY: 45,
+            head: [['No', 'Pertanyaan & Pembahasan', 'Status']],
+            body: rows,
+            theme: 'striped',
+            headStyles: { fillColor: [0, 0, 0] }
+        });
+        doc.save(`Hasil_Word_${pesertaName}.pdf`);
+    }
+</script>
+</body>
+</html>
